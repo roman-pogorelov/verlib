@@ -1,0 +1,6 @@
+# Файлы, генерируемые ModelSim'ом
+[_@]*
+wlf*
+*.wlf
+*.vstf
+vsim.dbg
