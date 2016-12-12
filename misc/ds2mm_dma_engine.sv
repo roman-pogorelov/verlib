@@ -287,26 +287,26 @@ module ds2mm_dma_engine
     //      Таймер обратного отсчета
     countdown
     #(
-        .WIDTH          (CSWIDTH)           // Разрядность счетчика
+        .WIDTH          (CSWIDTH)                   // Разрядность счетчика
     )
     abort_timer
     (
         // Сброс и тактирование
-        .reset          (reset),            // i
-        .clk            (clk),              // i
+        .reset          (reset),                    // i
+        .clk            (clk),                      // i
         
         // Разрешение тактирования
-        .clkena         (1'b1),             // i
+        .clkena         (1'b1),                     // i
         
         // Управляющие сигналы
-        .ctrl_time      (time_reg),         // i  [WIDTH - 1 : 0]
-        .ctrl_run       (time_start_reg),   // i
-        .ctrl_abort     (time_stop_reg),    // i
+        .ctrl_time      (time_reg),                 // i  [WIDTH - 1 : 0]
+        .ctrl_run       (time_start_reg),           // i
+        .ctrl_abort     (time_stop_reg | dma_done), // i
         
         // Статусные сигналы
-        .stat_left      (time_left),        // o  [WIDTH - 1 : 0]
-        .stat_busy      (time_busy),        // o
-        .stat_done      (time_done)         // o
+        .stat_left      (time_left),                // o  [WIDTH - 1 : 0]
+        .stat_busy      (time_busy),                // o
+        .stat_done      (time_done)                 // o
 
     ); // abort_timer
     

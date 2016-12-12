@@ -61,10 +61,7 @@ module countdown
             time_cnt <= '0;
         else if (clkena)
             if (busy_reg)
-                if (ctrl_abort)
-                    time_cnt <= '0;
-                else
-                    time_cnt <= time_cnt - (time_cnt != 0);
+                time_cnt <= time_cnt - (time_cnt != 0);
             else if (ctrl_run)
                 time_cnt <= ctrl_time;
             else
