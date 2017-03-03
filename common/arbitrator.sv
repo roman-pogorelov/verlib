@@ -28,8 +28,8 @@
 
 module arbitrator
 #(
-    parameter                           REQS    = 4,    // Количество абонентов (REQS > 1)
-    parameter                           SCHEME  = "FP"  // Схема арбитража ("RR" - циклическая, "FP" - фиксированная)
+    parameter int unsigned              REQS    = 4,    // Количество абонентов (REQS > 1)
+    parameter string                    SCHEME  = "FP"  // Схема арбитража ("RR" - циклическая, "FP" - фиксированная)
 )
 (
     // Сброс и тактирование
