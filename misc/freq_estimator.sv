@@ -44,6 +44,9 @@ module freq_estimator
     logic [$clog2(FACTOR*PERIOD) - 1 : 0]           est_tick_prev_reg;
     logic [$clog2(FACTOR*PERIOD) - 1 : 0]           freq_est_reg;
     
+    //------------------------------------------------------------------------------------
+    //      Задание временных ограничений Altera
+    (*altera_attribute = "-name SDC_STATEMENT \"set_false_path -from [get_registers {*freq_estimator:*|est_tick_cnt[*]}] -to [get_registers {*freq_estimator:*|est_tick_sync_reg[0][*]}]\""*)
     
     //------------------------------------------------------------------------------------
     //      Опорный счетчик
@@ -95,4 +98,4 @@ module freq_estimator
             freq_est_reg <= freq_est_reg;
     assign frequency = freq_est_reg;
     
-endmodule // freq_estimator
+endmodule: freq_estimator
