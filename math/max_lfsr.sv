@@ -10,11 +10,11 @@
     the_max_lfsr
     (
         // Сброс и тактирование
-        reset       (), // i
-        clk         (), // i
+        .reset      (), // i
+        .clk        (), // i
 
         // Разрешение тактирования
-        clkena      (), // i
+        .clkena     (), // i
 
         // Выход
         .data       ()  // o  [WIDTH - 1 : 0]
