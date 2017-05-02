@@ -1,6 +1,7 @@
 onerror {resume}
 quietly WaveActivateNextPane {} 0
 add wave -noupdate -radix unsigned /handshake_synchronizer/EXTRA_STAGES
+add wave -noupdate -radix unsigned /handshake_synchronizer/HANDSHAKE_TYPE
 add wave -noupdate -divider <NULL>
 add wave -noupdate /handshake_synchronizer/src_reset
 add wave -noupdate /handshake_synchronizer/src_clk
@@ -12,7 +13,7 @@ add wave -noupdate /handshake_synchronizer/src_req
 add wave -noupdate /handshake_synchronizer/src_rdy
 add wave -noupdate -divider <NULL>
 add wave -noupdate /handshake_synchronizer/dst_req
-add wave -noupdate /handshake_synchronizer/dst_ack
+add wave -noupdate /handshake_synchronizer/dst_rdy
 TreeUpdate [SetDefaultTree]
 WaveRestoreCursors {{Cursor 1} {25 ns} 0}
 quietly wave cursor active 1
