@@ -16,6 +16,6 @@ force m_reset 1 0ns, 0 9ns
 force m_clk 1 0ns, 0 3ns -r 6ns
 
 force m_rdat 0
-force m_rdyn 1
+force m_busy 1
 
 run 30001ps

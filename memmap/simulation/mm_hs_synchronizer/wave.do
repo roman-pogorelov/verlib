@@ -8,7 +8,7 @@ add wave -noupdate /mm_hs_synchronizer/s_wreq
 add wave -noupdate -radix hexadecimal /mm_hs_synchronizer/s_wdat
 add wave -noupdate /mm_hs_synchronizer/s_rreq
 add wave -noupdate -radix hexadecimal /mm_hs_synchronizer/s_rdat
-add wave -noupdate /mm_hs_synchronizer/s_rdyn
+add wave -noupdate /mm_hs_synchronizer/s_busy
 add wave -noupdate -divider <NULL>
 add wave -noupdate /mm_hs_synchronizer/m_reset
 add wave -noupdate /mm_hs_synchronizer/m_clk
@@ -18,7 +18,7 @@ add wave -noupdate /mm_hs_synchronizer/m_wreq
 add wave -noupdate -radix hexadecimal /mm_hs_synchronizer/m_wdat
 add wave -noupdate /mm_hs_synchronizer/m_rreq
 add wave -noupdate -radix hexadecimal /mm_hs_synchronizer/m_rdat
-add wave -noupdate /mm_hs_synchronizer/m_rdyn
+add wave -noupdate /mm_hs_synchronizer/m_busy
 TreeUpdate [SetDefaultTree]
 WaveRestoreCursors {{Cursor 1} {27 ns} 0}
 quietly wave cursor active 1

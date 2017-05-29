@@ -16,12 +16,12 @@
         .s_clk      (), // i
         
         // Интерфейс ведомого (подключается с ведущему)
-        .s_addr,    (), // i  [AWIDTH - 1 : 0]
-        .s_wreq,    (), // i
-        .s_wdat,    (), // i  [DWIDTH - 1 : 0]
-        .s_rreq,    (), // i
-        .s_rdat,    (), // o  [DWIDTH - 1 : 0]
-        .s_rdyn,    (), // o
+        .s_addr     (), // i  [AWIDTH - 1 : 0]
+        .s_wreq     (), // i
+        .s_wdat     (), // i  [DWIDTH - 1 : 0]
+        .s_rreq     (), // i
+        .s_rdat     (), // o  [DWIDTH - 1 : 0]
+        .s_busy     (), // o
         
         // Сброс и тактирование интерфейса ведущего
         .m_reset    (), // i
@@ -33,7 +33,7 @@
         .m_wdat     (), // o  [DWIDTH - 1 : 0]
         .m_rreq     (), // o
         .m_rdat     (), // i  [DWIDTH - 1 : 0]
-        .m_rdyn     ()  // i
+        .m_busy     ()  // i
     ); // the_mm_hs_synchronizer
 */
 
@@ -60,7 +60,7 @@ module mm_hs_synchronizer
     input  logic [DWIDTH - 1 : 0]   s_wdat,
     input  logic                    s_rreq,
     output logic [DWIDTH - 1 : 0]   s_rdat,
-    output logic                    s_rdyn,
+    output logic                    s_busy,
     
     // Сброс и тактирование интерфейса ведущего
     input  logic                    m_reset,
@@ -72,7 +72,7 @@ module mm_hs_synchronizer
     output logic [DWIDTH - 1 : 0]   m_wdat,
     output logic                    m_rreq,
     input  logic [DWIDTH - 1 : 0]   m_rdat,
-    input  logic                    m_rdyn
+    input  logic                    m_busy
 );
     //------------------------------------------------------------------------------------
     //      Объявление сигналов
@@ -112,7 +112,7 @@ module mm_hs_synchronizer
         
         // Интерфейс домена приемника
         .dst_req        (hs_dst_req),               // o
-        .dst_rdy        (~m_rdyn)                   // i
+        .dst_rdy        (~m_busy)                   // i
     ); // ctrl_synchronizer
     
     //------------------------------------------------------------------------------------
@@ -147,7 +147,7 @@ module mm_hs_synchronizer
     always @(posedge m_reset, m_clk)
         if (m_reset)
             m2s_hld_reg <= '0;
-        else if (hs_dst_req & ~m_rdyn)
+        else if (hs_dst_req & ~m_busy)
             m2s_hld_reg <= m_rdat;
         else
             m2s_hld_reg <= m2s_hld_reg;
@@ -155,7 +155,7 @@ module mm_hs_synchronizer
     //------------------------------------------------------------------------------------
     //      Формирование выходных сигналов ведомого
     assign s_rdat = m2s_hld_reg;
-    assign s_rdyn = npending_reg | ~hs_src_rdy;
+    assign s_busy = npending_reg | ~hs_src_rdy;
     
     //------------------------------------------------------------------------------------
     //      Формирование выходных сигналов ведущего

@@ -20,7 +20,7 @@
         .s_wdat     (), // i  [DWIDTH - 1 : 0]
         .s_rreq     (), // i
         .s_rdat     (), // o  [DWIDTH - 1 : 0]
-        .s_rdyn     (), // o
+        .s_busy     (), // o
         
         // Интерфейс ведущего (подключается с ведомому)
         .m_addr     (), // o  [AWIDTH - 1 : 0]
@@ -28,7 +28,7 @@
         .m_wdat     (), // o  [DWIDTH - 1 : 0]
         .m_rreq     (), // o
         .m_rdat     (), // i  [DWIDTH - 1 : 0]
-        .m_rdyn     ()  // i
+        .m_busy     ()  // i
     ); // the_mm_arbitrator
 */
 
@@ -50,7 +50,7 @@ module mm_arbitrator
     input  logic [MASTERS - 1 : 0][DWIDTH - 1 : 0]  s_wdat,
     input  logic [MASTERS - 1 : 0]                  s_rreq,
     output logic [MASTERS - 1 : 0][DWIDTH - 1 : 0]  s_rdat,
-    output logic [MASTERS - 1 : 0]                  s_rdyn,
+    output logic [MASTERS - 1 : 0]                  s_busy,
     
     // Интерфейс ведущего (подключается с ведомому)
     output logic [AWIDTH - 1 : 0]                   m_addr,
@@ -58,7 +58,7 @@ module mm_arbitrator
     output logic [DWIDTH - 1 : 0]                   m_wdat,
     output logic                                    m_rreq,
     input  logic [DWIDTH - 1 : 0]                   m_rdat,
-    input  logic                                    m_rdyn
+    input  logic                                    m_busy
 );
     //------------------------------------------------------------------------------------
     //      Объявление сигналов
@@ -86,7 +86,7 @@ module mm_arbitrator
         .req            (request),  // i  [REQS - 1 : 0]
         
         // Готовность обработать запрос
-        .rdy            (~m_rdyn),  // i
+        .rdy            (~m_busy),  // i
         
         // Вектор гранта на обслуживание
         .gnt            (grant),    // o  [REQS - 1 : 0]
@@ -97,7 +97,7 @@ module mm_arbitrator
     
     //------------------------------------------------------------------------------------
     //      Коммутация сигнала отсутствия готовности
-    assign s_rdyn = ~grant | {MASTERS{m_rdyn}};
+    assign s_busy = ~grant | {MASTERS{m_busy}};
     
     //------------------------------------------------------------------------------------
     //      Разветвление данных чтения от ведомого ко всем ведущим

@@ -15,6 +15,6 @@ change {s_wdat[1]} 'h20
 force  s_rreq 0
 
 force m_rdat 'h66
-force m_rdyn 1
+force m_busy 1
 
 run 30001ps
