@@ -15,11 +15,11 @@ add wave -noupdate /ps_mm_writer/i_val
 add wave -noupdate /ps_mm_writer/i_eop
 add wave -noupdate /ps_mm_writer/i_rdy
 add wave -noupdate -divider <NULL>
-add wave -noupdate -radix hexadecimal /ps_mm_writer/avm_address
-add wave -noupdate -radix hexadecimal /ps_mm_writer/avm_byteenable
-add wave -noupdate /ps_mm_writer/avm_write
-add wave -noupdate -radix hexadecimal /ps_mm_writer/avm_writedata
-add wave -noupdate /ps_mm_writer/avm_waitrequest
+add wave -noupdate -radix hexadecimal /ps_mm_writer/m_addr
+add wave -noupdate -radix hexadecimal /ps_mm_writer/m_bena
+add wave -noupdate /ps_mm_writer/m_wreq
+add wave -noupdate -radix hexadecimal /ps_mm_writer/m_wdat
+add wave -noupdate /ps_mm_writer/m_busy
 add wave -noupdate -divider <NULL>
 add wave -noupdate -radix hexadecimal /ps_mm_writer/s_dat
 add wave -noupdate /ps_mm_writer/s_val

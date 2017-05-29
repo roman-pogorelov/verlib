@@ -15,6 +15,6 @@ force i_mty 0
 force i_val 0
 force i_eop 0
 
-force avm_waitrequest 0
+force m_busy 0
 
 run 30001ps
