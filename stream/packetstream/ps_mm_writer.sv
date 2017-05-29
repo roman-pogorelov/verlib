@@ -1,35 +1,35 @@
 /*
     //------------------------------------------------------------------------------------
     //      Модуль записи пакета потокового интерфейса PacketStream в память,
-    //      доступную через интерфейс Avalon MM
+    //      доступную через интерфейс MemoryMapped
     ps_mm_writer
     #(
-        .DWIDTH             (), // Разрядность данных
-        .AWIDTH             (), // Разрядность адреса
-        .SYMBOLS            ()  // Количество символов
+        .DWIDTH     (), // Разрядность данных
+        .AWIDTH     (), // Разрядность адреса
+        .SYMBOLS    ()  // Количество символов
     )
     the_ps_mm_writer
     (
         // Сброс и тактирование
-        .reset              (), // i
-        .clk                (), // i
+        .reset      (), // i
+        .clk        (), // i
         
         // Интерфейс задания стартового адреса
-        .address            (), // i  [AWIDTH - 1 : 0]
+        .address    (), // i  [AWIDTH - 1 : 0]
         
         // Входной потоковый интерфейс
-        .i_dat              (), // i  [DWIDTH - 1 : 0]
-        .i_mty              (), // i  [$clog2(SYMBOLS) - 1 : 0]
-        .i_val              (), // i
-        .i_eop              (), // i
-        .i_rdy              (), // o
+        .i_dat      (), // i  [DWIDTH - 1 : 0]
+        .i_mty      (), // i  [$clog2(SYMBOLS) - 1 : 0]
+        .i_val      (), // i
+        .i_eop      (), // i
+        .i_rdy      (), // o
         
-        // Интерфейс Avalon-MM-Master
-        .avm_address        (), // o  [AWIDTH - 1 : 0]
-        .avm_byteenable     (), // o  [SYMBOLS - 1 : 0]
-        .avm_write          (), // o
-        .avm_writedata      (), // o  [DWIDTH - 1 : 0]
-        .avm_waitrequest    ()  // i
+        // Интерфейс MemoryMapped
+        .m_addr     (), // o  [AWIDTH - 1 : 0]
+        .m_bena     (), // o  [SYMBOLS - 1 : 0]
+        .m_wreq     (), // o
+        .m_wdat     (), // o  [DWIDTH - 1 : 0]
+        .m_busy     ()  // i
     ); // the_ps_mm_writer
 */
 
@@ -54,12 +54,12 @@ module ps_mm_writer
     input  logic                            i_eop,
     output logic                            i_rdy,
     
-    // Интерфейс Avalon-MM-Master
-    output logic [AWIDTH - 1 : 0]           avm_address,
-    output logic [SYMBOLS - 1 : 0]          avm_byteenable,
-    output logic                            avm_write,
-    output logic [DWIDTH - 1 : 0]           avm_writedata,
-    input  logic                            avm_waitrequest
+    // Интерфейс MemoryMapped
+    output logic [AWIDTH - 1 : 0]           m_addr,
+    output logic [SYMBOLS - 1 : 0]          m_bena,
+    output logic                            m_wreq,
+    output logic [DWIDTH - 1 : 0]           m_wdat,
+    input  logic                            m_busy
 );
     //------------------------------------------------------------------------------------
     //      Описание сигналов
@@ -72,7 +72,6 @@ module ps_mm_writer
     logic [AWIDTH - 1 : 0]                  addr_cnt;
     logic [SYMBOLS - 1 : 0]                 mty_one_hote;
     logic [SYMBOLS - 1 : 0]                 be_reversed;
-    
     
     //------------------------------------------------------------------------------------
     //      Модуль добавления признака начала пакета потокового интерфейса PacketStream
@@ -111,14 +110,14 @@ module ps_mm_writer
             addr_cnt <= addr_cnt;
     
     //------------------------------------------------------------------------------------
-    //      Логика формирования адреса интерфейса Avalon-MM-Master
-    assign avm_address   = s_sop ? address : addr_cnt;
+    //      Логика формирования адреса интерфейса MemoryMapped
+    assign m_addr = s_sop ? address : addr_cnt;
     
     //------------------------------------------------------------------------------------
     //      Сквозная трансляция сигналов
-    assign avm_write = s_val;
-    assign avm_writedata = s_dat;
-    assign s_rdy = ~avm_waitrequest;
+    assign m_wreq =  s_val;
+    assign m_wdat =  s_dat;
+    assign s_rdy  = ~m_busy;
     
     //------------------------------------------------------------------------------------
     //      Преобразователь двоичного кода в позиционный
@@ -140,15 +139,15 @@ module ps_mm_writer
     //      Модуль реверса (зеркалирования) разрядов произвольной параллельной шины
     bitreverser
     #(
-        .WIDTH      (SYMBOLS)           // Разрядность
+        .WIDTH      (SYMBOLS)       // Разрядность
     )
     be_bitreverser
     (
         // Входные данные
-        .i_dat      (be_reversed),      // i  [WIDTH - 1 : 0] 
+        .i_dat      (be_reversed),  // i  [WIDTH - 1 : 0] 
         
         // Выходные данные
-        .o_dat      (avm_byteenable)    // o  [WIDTH - 1 : 0]
+        .o_dat      (m_bena)        // o  [WIDTH - 1 : 0]
     ); // be_bitreverser
     
 endmodule // ps_mm_writer
