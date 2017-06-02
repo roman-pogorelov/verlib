@@ -92,14 +92,16 @@ module avl_vlb_memory_model
                 index = 1;
                 address = avs_address;
                 burstcount = avs_burstcount;
-                memory[avs_address] = avs_writedata;
+                memory[address] = avs_writedata;
+                address++;
                 while (index < burstcount) begin
                     @(posedge clk);
                     if (avs_read) begin
                         $fatal("Установлен запрос на чтение при незаконченной операции пакетной записи.");
                     end
                     else if (avs_write & ~avs_waitrequest) begin
-                        memory[address + index] = avs_writedata;
+                        memory[address] = avs_writedata;
+                        address++;
                         index++;
                     end
                     avs_waitrequest = $random;
@@ -128,14 +130,16 @@ module avl_vlb_memory_model
                 index = 1;
                 address = avs_address;
                 burstcount = avs_burstcount;
-                readdata = memory[avs_address];
+                readdata = memory[address];
                 readdatavalid = '1;
                 avs_waitrequest = '1;
+                address++;
                 while (index < burstcount) begin
                     @(posedge clk);
                     if (~rdburstwait) begin
-                        readdata = memory[address + index];
+                        readdata = memory[address];
                         readdatavalid = '1;
+                        address++;
                         index++;
                     end
                     else begin

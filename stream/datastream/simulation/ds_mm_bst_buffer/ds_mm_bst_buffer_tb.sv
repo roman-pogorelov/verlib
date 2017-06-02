@@ -35,6 +35,9 @@ module ds_mm_bst_buffer_tb ();
     //
     int                         i_word_cnt;
     int                         o_word_cnt;
+    int                         wreq_word_cnt;
+    int                         rreq_word_cnt;
+    int                         rack_word_cnt;
     
     //------------------------------------------------------------------------------------
     //      Инициализация
@@ -56,11 +59,11 @@ module ds_mm_bst_buffer_tb ();
     //------------------------------------------------------------------------------------
     //      Формирование сигнала o_rdy выходного потокового интерфейса
     initial o_rdy = '0;
-    // always @(posedge reset, posedge clk)
-        // if (reset)
-            // o_rdy = '0;
-        // else
-            // o_rdy <= $random;
+    always @(posedge reset, posedge clk)
+        if (reset)
+            o_rdy = '0;
+        else
+            o_rdy <= $random;
     
     //------------------------------------------------------------------------------------
     //      Модуль буферизации потокового интерфейса DataStream в память с интерфейсом
@@ -144,6 +147,22 @@ module ds_mm_bst_buffer_tb ();
     end
     
     //------------------------------------------------------------------------------------
+    //      Процесс проверки приема
+    initial begin
+        for (int data = 0; data < 2**(AWIDTH + 1); data++) begin
+            @(posedge clk);
+            if (o_val & o_rdy) begin
+                if (o_dat != data) begin
+                    $error("Принятое значение не соответствует ожидаемому.");
+                end
+            end
+            else begin
+                data = data - 1;
+            end
+        end
+    end
+    
+    //------------------------------------------------------------------------------------
     //      Счетчик входных слов
     initial i_word_cnt = 0;
     always @(posedge clk)
@@ -154,5 +173,26 @@ module ds_mm_bst_buffer_tb ();
     initial o_word_cnt = 0;
     always @(posedge clk)
         o_word_cnt <= o_word_cnt + (o_val & o_rdy);
+    
+    //------------------------------------------------------------------------------------
+    //      Счетчик запросов на запись
+    initial wreq_word_cnt = 0;
+    always @(posedge clk)
+        wreq_word_cnt <= wreq_word_cnt + (m_wreq & ~m_busy);
+    
+    //------------------------------------------------------------------------------------
+    //      Счетчик запросов на чтение
+    initial rreq_word_cnt = 0;
+    always @(posedge clk)
+        if (m_rreq & ~m_busy)
+            rreq_word_cnt <= rreq_word_cnt + m_bcnt;
+        else
+            rreq_word_cnt <= rreq_word_cnt;
+    
+    //------------------------------------------------------------------------------------
+    //      Счетчик ответов на запрос чтения
+    initial rack_word_cnt = 0;
+    always @(posedge clk)
+        rack_word_cnt <= rack_word_cnt + m_rval;
     
 endmodule: ds_mm_bst_buffer_tb

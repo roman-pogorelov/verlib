@@ -28,6 +28,9 @@ add wave -noupdate /ds_mm_bst_buffer_tb/m_busy
 add wave -noupdate -divider <NULL>
 add wave -noupdate -radix unsigned /ds_mm_bst_buffer_tb/i_word_cnt
 add wave -noupdate -radix unsigned /ds_mm_bst_buffer_tb/o_word_cnt
+add wave -noupdate -radix unsigned /ds_mm_bst_buffer_tb/wreq_word_cnt
+add wave -noupdate -radix unsigned /ds_mm_bst_buffer_tb/rreq_word_cnt
+add wave -noupdate -radix unsigned /ds_mm_bst_buffer_tb/rack_word_cnt
 add wave -noupdate -divider <NULL>
 add wave -noupdate -color Salmon /ds_mm_bst_buffer_tb/the_ds_mm_bst_buffer/state
 add wave -noupdate -radix unsigned /ds_mm_bst_buffer_tb/the_ds_mm_bst_buffer/ififo_used
@@ -35,8 +38,9 @@ add wave -noupdate -radix unsigned /ds_mm_bst_buffer_tb/the_ds_mm_bst_buffer/fre
 add wave -noupdate -radix unsigned /ds_mm_bst_buffer_tb/the_ds_mm_bst_buffer/wr_bcnt_max
 add wave -noupdate -radix unsigned /ds_mm_bst_buffer_tb/the_ds_mm_bst_buffer/wr_bcnt_reg
 add wave -noupdate -radix unsigned /ds_mm_bst_buffer_tb/the_ds_mm_bst_buffer/wr_bcnt_cnt
+add wave -noupdate -radix hexadecimal /ds_mm_bst_buffer_tb/the_avl_vlb_memory_model/memory
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {60323 ps} 0}
+WaveRestoreCursors {{Cursor 1} {2559493 ps} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 150
 configure wave -valuecolwidth 100
@@ -52,4 +56,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ps
 update
-WaveRestoreZoom {0 ps} {512 ns}
+WaveRestoreZoom {2439507 ps} {2609875 ps}
