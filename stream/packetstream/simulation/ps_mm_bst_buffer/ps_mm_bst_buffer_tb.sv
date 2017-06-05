@@ -43,6 +43,8 @@ module ps_mm_bst_buffer_tb ();
     int                             wreq_word_cnt;
     int                             rreq_word_cnt;
     int                             rack_word_cnt;
+    //
+    logic [$clog2(SEGLEN) : 0]      packSizeQueue[$];
     
     //------------------------------------------------------------------------------------
     //      Инициализация
@@ -65,11 +67,11 @@ module ps_mm_bst_buffer_tb ();
     //------------------------------------------------------------------------------------
     //      Формирование сигнала o_rdy выходного потокового интерфейса
     initial o_rdy = '0;
-    // always @(posedge reset, posedge clk)
-        // if (reset)
-            // o_rdy = '0;
-        // else
-            // o_rdy <= $random;
+    always @(posedge reset, posedge clk)
+        if (reset)
+            o_rdy = '0;
+        else
+            o_rdy <= $random;
     
     //------------------------------------------------------------------------------------
     //      Модуль буферизации потокового интерфейса PacketStream в память с интерфейсом
@@ -145,6 +147,7 @@ module ps_mm_bst_buffer_tb ();
         @(posedge clk);
         for (int packet = 0; packet < PACKETS; packet++) begin
             automatic logic [$clog2(SEGLEN) : 0] packLen = $random;
+            packSizeQueue.push_front(packLen);
             for (int data = 0; data < packLen + 1; data++) begin
                 i_val = i_val | $random;
                 i_dat = data;
@@ -167,7 +170,12 @@ module ps_mm_bst_buffer_tb ();
             @(posedge clk);
             if (o_val & o_rdy) begin
                 if (o_dat != data) begin
-                    $error("Принятое значение не соответствует ожидаемому.");
+                    $error("Выходное значение не соответствует ожидаемому.");
+                end
+                if (o_eop) begin
+                    if (o_dat != packSizeQueue.pop_back()) begin
+                        $error("Длина выходного пакета не соотвествует длине входного.");
+                    end
                 end
                 data = o_eop ? 0 : data + 1;
             end
