@@ -15,12 +15,12 @@
         .clk        (), // i
         
         // Интерфейсы ведомых (подключаются с ведущим)
-        .s_addr     (), // i  [AWIDTH - 1 : 0]
-        .s_wreq     (), // i
-        .s_wdat     (), // i  [DWIDTH - 1 : 0]
-        .s_rreq     (), // i
-        .s_rdat     (), // o  [DWIDTH - 1 : 0]
-        .s_busy     (), // o
+        .s_addr     (), // i  [MASTERS - 1 : 0][AWIDTH - 1 : 0]
+        .s_wreq     (), // i  [MASTERS - 1 : 0]
+        .s_wdat     (), // i  [MASTERS - 1 : 0][DWIDTH - 1 : 0]
+        .s_rreq     (), // i  [MASTERS - 1 : 0]
+        .s_rdat     (), // o  [MASTERS - 1 : 0][DWIDTH - 1 : 0]
+        .s_busy     (), // o  [MASTERS - 1 : 0]
         
         // Интерфейс ведущего (подключается с ведомому)
         .m_addr     (), // o  [AWIDTH - 1 : 0]
