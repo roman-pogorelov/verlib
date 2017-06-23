@@ -327,9 +327,9 @@ module ds_mm_bst_buffer
         if (reset)
             rd_stop_reg <= '0;
         else if (rd_stop_reg)
-            rd_stop_reg <= ~o_rdy;
+            rd_stop_reg <= ~(o_val & o_rdy);
         else
-            rd_stop_reg <= ~(rd_free_cnt > rd_bcnt_reg) & m_rreq & ~m_busy & ~o_rdy;
+            rd_stop_reg <= ~(rd_free_cnt > rd_bcnt_reg) & m_rreq & ~m_busy & ~(o_val & o_rdy);
     
     //------------------------------------------------------------------------------------
     //      Счетчик адреса чтения
