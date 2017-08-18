@@ -87,7 +87,7 @@ module mmv_arbitrator_tb ();
         .reset      (reset),    // i
         .clk        (clk),      // i
         
-        // Интерфейсы ведомых (подключаются с ведущим)
+        // Интерфейсы ведомых (подключаются к ведущим)
         .s_addr     (s_addr),   // i  [MASTERS - 1 : 0][AWIDTH - 1 : 0]
         .s_wreq     (s_wreq),   // i  [MASTERS - 1 : 0]
         .s_wdat     (s_wdat),   // i  [MASTERS - 1 : 0][DWIDTH - 1 : 0]
@@ -96,7 +96,7 @@ module mmv_arbitrator_tb ();
         .s_rval     (s_rval),   // o  [MASTERS - 1 : 0]
         .s_busy     (s_busy),   // o  [MASTERS - 1 : 0]
         
-        // Интерфейс ведущего (подключается с ведомому)
+        // Интерфейс ведущего (подключается к ведомому)
         .m_addr     (m_addr),   // o  [AWIDTH - 1 : 0]
         .m_wreq     (m_wreq),   // o
         .m_wdat     (m_wdat),   // o  [DWIDTH - 1 : 0]
