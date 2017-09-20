@@ -55,29 +55,34 @@ module cordic_sin_cos_iterated
 );
     //------------------------------------------------------------------------------------
     //      Описание констант
-    localparam logic [WIDTH - 1 : 0]    INITVAL = CORDIC_GAIN[63 : 64 - WIDTH] - 1'b1;
-    localparam int unsigned             MAXITER = WIDTH - 2;
+    localparam int unsigned                 ADDWIDTH    = $clog2(WIDTH) + 2;
+    localparam int unsigned                 COREWIDTH   = WIDTH + ADDWIDTH;
+    localparam int unsigned                 MAXITER     = WIDTH - 2;
+    localparam logic [COREWIDTH - 1 : 0]    INITVAL     = {CORDIC_GAIN[MAXITER][63 : 64 - WIDTH], {ADDWIDTH{1'b0}}};
 
     //------------------------------------------------------------------------------------
     //      Описание блоков памяти с учетом атрибутов Altera
-    (* ramstyle = RAMTYPE *) reg [WIDTH - 1 : 0] lookup_table [WIDTH - 1 : 0];
+    (* ramstyle = RAMTYPE *) reg [COREWIDTH - 1 : 0] lookup_table [WIDTH - 2 : 0];
     
     //------------------------------------------------------------------------------------
     //      Объявление сигналов
-    logic                           state_reg;
-    logic                           done_reg;
-    logic [$clog2(WIDTH) - 1 : 0]   iteration_cnt;
-    logic [WIDTH - 1 : 0]           init_x;
-    logic [WIDTH - 1 : 0]           init_y;
-    logic [WIDTH - 1 : 0]           init_z;
-    logic [WIDTH - 1 : 0]           alpha;
-    logic                           clkena;
+    logic                               state_reg;
+    logic                               done_reg;
+    logic [$clog2(COREWIDTH) - 1 : 0]   iteration_cnt;
+    logic [COREWIDTH - 1 : 0]           init_x;
+    logic [COREWIDTH - 1 : 0]           init_y;
+    logic [COREWIDTH - 1 : 0]           init_z;
+    logic [COREWIDTH - 1 : 0]           alpha;
+    logic [COREWIDTH - 1 : 0]           core_x;
+    logic [COREWIDTH - 1 : 0]           core_y;
+    logic [COREWIDTH - 1 : 0]           core_z;
+    logic                               clkena;
     
     //------------------------------------------------------------------------------------
     //      Инициализация таблицы элементарных углов поворота
     initial begin
-        for (int i = 0; i < WIDTH; i++) begin
-            lookup_table[i] = CORDIC_LUT[i][63 : 64 - WIDTH] + ((WIDTH < 64) ? CORDIC_LUT[i][64 - WIDTH - 1] : 1'b0);
+        for (int i = 0; i < WIDTH - 1; i++) begin
+            lookup_table[i] = CORDIC_LUT[i][63 : 64 - COREWIDTH] + ((COREWIDTH < 64) ? CORDIC_LUT[i][64 - COREWIDTH - 1] : 1'b0);
         end
     end
     
@@ -120,7 +125,7 @@ module cordic_sin_cos_iterated
     //      Начальные значения координат и угла поворота
     assign init_x = INITVAL;
     assign init_y = '0;
-    assign init_z = arg;
+    assign init_z = {arg, {ADDWIDTH{1'b0}}};
     
     //------------------------------------------------------------------------------------
     //      Текущий элементарный угол поворота
@@ -134,7 +139,7 @@ module cordic_sin_cos_iterated
     //      Вычислительное ядро, выполняющее одну итерацию CORDIC-алгоритма
     cordic_core
     #(
-        .WIDTH      (WIDTH)             // Разрядность
+        .WIDTH      (COREWIDTH)         // Разрядность
     )
     the_cordic_core
     (
@@ -157,9 +162,14 @@ module cordic_sin_cos_iterated
         .i_z        (init_z),           // i  [WIDTH - 1 : 0]
         
         // Выходные данные
-        .o_x        (cos),              // o  [WIDTH - 1 : 0]
-        .o_y        (sin),              // o  [WIDTH - 1 : 0]
-        .o_z        (  )                // o  [WIDTH - 1 : 0]
+        .o_x        (core_x),           // o  [WIDTH - 1 : 0]
+        .o_y        (core_y),           // o  [WIDTH - 1 : 0]
+        .o_z        (core_z)            // o  [WIDTH - 1 : 0]
     ); // the_cordic_core
+    
+    //------------------------------------------------------------------------------------
+    //      Формирование значение sin(x) и cos(x)
+    assign cos = core_x[COREWIDTH - 1 : ADDWIDTH];
+    assign sin = core_y[COREWIDTH - 1 : ADDWIDTH];
     
 endmodule: cordic_sin_cos_iterated

@@ -9,6 +9,6 @@ force reset 1 0ns, 0 15ns
 force clk 1 0ns, 0 5ns -r 10ns
 
 force start 0
-force arg 'h4000
+force arg 0
 
 run 30001ps
