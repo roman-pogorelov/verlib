@@ -3,4 +3,5 @@
 wlf*
 *.wlf
 *.vstf
+*.ini
 vsim.dbg
