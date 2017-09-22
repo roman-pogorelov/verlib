@@ -1,5 +1,5 @@
 // memory data file (do not edit the following line - required for mem load use)
-// instance=/rom_sin_cos_s16/sinlut
+// instance=/rom_sin_cos_tb/the_rom_sin_cos/wrlut
 // format=hex addressradix=h dataradix=h version=1.0 wordsperline=1 noaddress
 0000
 0003
