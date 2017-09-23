@@ -4,7 +4,8 @@
     rom_sin_cos
     #(
         .WIDTH      (), // Разрядность
-        .RAMTYPE    ()  // Тип ресурса ("AUTO", "M10K, "LOGIC", ...)
+        .RAMTYPE    (), // Тип ресурса ("AUTO", "M10K, "LOGIC", ...)
+        .INITFILE   ()  // Имя файла таблицы синусов
     )
     the_rom_sin_cos
     (
@@ -18,18 +19,17 @@
         // Значение аргумента
         .arg        (), // i  [WIDTH - 1 : 0]
         
-        // Значения sin(arg), cos(arg)
+        // Значения функций с латентностью 2 такта
         .sin        (), // o  [WIDTH - 1 : 0]
         .cos        ()  // o  [WIDTH - 1 : 0]
     ); // the_rom_sin_cos
 */
 
-`define ROMNAME "sin-1st-quadrant.txt"
-
 module rom_sin_cos
 #(
-    parameter int unsigned          WIDTH   = 8,        // Разрядность
-    parameter string                RAMTYPE = "AUTO"    // Тип ресурса ("AUTO", "M10K, "LOGIC", ...)
+    parameter int unsigned          WIDTH    = 16,                      // Разрядность
+    parameter string                RAMTYPE  = "AUTO",                  // Тип ресурса ("AUTO", "M10K, "LOGIC", ...)
+    parameter                       INITFILE = "sin-1st-quadrant.txt"   // Имя файла таблицы синусов
 )
 (
     // Сброс и тактирование
@@ -67,7 +67,7 @@ module rom_sin_cos
     //------------------------------------------------------------------------------------
     //      Описание блока памяти с учетом атрибутов Altera
     (* ramstyle = RAMTYPE *) reg [FWIDTH - 1 : 0] lut [2**AWIDTH - 1 : 0];
-    initial $readmemh(`ROMNAME, lut);
+    initial $readmemb(INITFILE, lut);
     
     //------------------------------------------------------------------------------------
     //      Регистр адреса значения синуса
@@ -165,7 +165,7 @@ module rom_sin_cos
         for (int i = 0; i < 2**AWIDTH; i++) begin
             wrlut[i] = int'($sin(real'(i) / real'(2**AWIDTH) * PI2) * real'(2**FWIDTH - 1));
         end
-        $writememh(`ROMNAME, wrlut);
+        $writememb(INITFILE, wrlut);
     end
     // synthesis translate_on
     
