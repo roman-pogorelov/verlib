@@ -5,7 +5,7 @@
     alt_rom_sin_cos
     #(
         .WIDTH      (), // Разрядность
-        .HEXNAME    ()  // HEX-файл с предварительно расчитанный таблицей синусов
+        .HEXFILE    ()  // HEX-файл с предварительно расчитанный таблицей синусов
     )
     the_alt_rom_sin_cos
     (
@@ -28,7 +28,7 @@
 module alt_rom_sin_cos
 #(
     parameter int unsigned          WIDTH   = 16,           // Разрядность
-    parameter                       HEXNAME = "sin-lut.hex" // HEX-файл с предварительно расчитанный таблицей синусов
+    parameter                       HEXFILE = "sin-lut.hex" // HEX-файл с предварительно расчитанный таблицей синусов
 )
 (
     // Сброс и тактирование
@@ -93,7 +93,7 @@ module alt_rom_sin_cos
         .clock_enable_output_a      ("NORMAL"),
         .clock_enable_output_b      ("NORMAL"),
         .indata_reg_b               ("CLOCK0"),
-        .init_file                  (HEXNAME),
+        .init_file                  (HEXFILE),
         .lpm_type                   ("altsyncram"),
         .numwords_a                 (2**AWIDTH),
         .numwords_b                 (2**AWIDTH),
