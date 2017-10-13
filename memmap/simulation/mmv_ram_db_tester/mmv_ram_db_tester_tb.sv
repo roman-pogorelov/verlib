@@ -5,8 +5,7 @@ module mmv_ram_db_tester_tb ();
     //      Описание констант
     localparam int unsigned                     AWIDTH  = 8;        // Разрядность адреса
     localparam int unsigned                     DWIDTH  = 8;        // Разрядность данных
-    localparam int unsigned                     RDPENDS = 8;        // Максимальное количество незавершенных транзакций чтения
-    localparam int unsigned                     RDDELAY = 4;        // Задержка выдачи данных при чтении (RDDELAY > 0)
+    localparam int unsigned                     RDDELAY = 16;       // Задержка выдачи данных при чтении (RDDELAY > 0)
     localparam string                           MODE    = "MEMORY"; // Режим работы ("RANDOM" | "MEMORY")
     
     //------------------------------------------------------------------------------------
@@ -53,8 +52,7 @@ module mmv_ram_db_tester_tb ();
     mmv_ram_db_tester
     #(
         .AWIDTH     (AWIDTH),   // Разрядность адреса
-        .DWIDTH     (DWIDTH),   // Разрядность данных
-        .RDPENDS    (RDPENDS)   // Максимальное количество незавершенных транзакций чтения
+        .DWIDTH     (DWIDTH)    // Разрядность данных
     )
     the_mmv_ram_db_tester
     (

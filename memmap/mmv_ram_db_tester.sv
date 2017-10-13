@@ -4,8 +4,7 @@
     mmv_ram_db_tester
     #(
         .AWIDTH     (), // Разрядность адреса
-        .DWIDTH     (), // Разрядность данных
-        .RDPENDS    ()  // Максимальное количество незавершенных транзакций чтения
+        .DWIDTH     ()  // Разрядность данных
     )
     the_mmv_ram_db_tester
     (
@@ -34,8 +33,7 @@
 module mmv_ram_db_tester
 #(
     parameter int unsigned          AWIDTH  = 8,    // Разрядность адреса
-    parameter int unsigned          DWIDTH  = 8,    // Разрядность данных
-    parameter int unsigned          RDPENDS = 2     // Максимальное количество незавершенных транзакций чтения
+    parameter int unsigned          DWIDTH  = 8     // Разрядность данных
 )
 (
     // Сброс и тактирование
@@ -60,7 +58,7 @@ module mmv_ram_db_tester
 );
     //------------------------------------------------------------------------------------
     //      Описание констант
-    localparam int unsigned RPWIDTH = $clog2(RDPENDS + 1);
+    localparam int unsigned RPWIDTH = $clog2(DWIDTH + 1);
     
     //------------------------------------------------------------------------------------
     //      Объявление сигналов
