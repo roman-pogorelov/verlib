@@ -6,4 +6,4 @@ vsim -fsmdebug work.mmv_ram_ab_tester_tb_opt
 
 do wave.do
 
-run 30001ps
+run 3000ns

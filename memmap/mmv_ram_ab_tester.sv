@@ -4,8 +4,7 @@
     mmv_ram_ab_tester
     #(
         .AWIDTH     (), // Разрядность адреса
-        .DWIDTH     (), // Разрядность данных
-        .RDPENDS    ()  // Максимальное количество незавершенных транзакций чтения
+        .DWIDTH     ()  // Разрядность данных
     )
     the_mmv_ram_ab_tester
     (
@@ -34,8 +33,7 @@
 module mmv_ram_ab_tester
 #(
     parameter int unsigned          AWIDTH  = 8,    // Разрядность адреса
-    parameter int unsigned          DWIDTH  = 8,    // Разрядность данных
-    parameter int unsigned          RDPENDS = 2     // Максимальное количество незавершенных транзакций чтения
+    parameter int unsigned          DWIDTH  = 8     // Разрядность данных
 )
 (
     // Сброс и тактирование
@@ -64,22 +62,28 @@ module mmv_ram_ab_tester
     logic [DWIDTH - 1 : 0]          antipattern;
     logic [AWIDTH - 1 : 0]          req0_addr_reg;
     logic [AWIDTH - 1 : 0]          req1_addr_reg;
+    logic [$clog2(AWIDTH) - 1 : 0]  ack0_cnt;
+    logic [$clog2(AWIDTH) - 1 : 0]  ack1_cnt;
+    logic                           rd_inv_reg;
+    logic [DWIDTH - 1 : 0]          test_data;
+    logic                           done_reg;
+    logic                           fault_reg;
     
     //------------------------------------------------------------------------------------
     //      Кодирование состояний конечного автомата запросов записи/чтения
-    enum logic [8 : 0] {
-        st_idle     = 9'b0_0_00_00_00_0,
-        st_w1_all_p = 9'b0_0_11_01_01_1,
-        st_w1_nul_n = 9'b1_0_10_01_01_1,
-        st_r1_all_p = 9'b1_0_11_01_10_1,
-        st_w1_nul_p = 9'b0_0_01_01_01_1,
-        st_w2_cur_n = 9'b1_1_01_01_01_1,
-        st_r2_nul_p = 9'b0_0_10_01_10_1,
-        st_r2_all_p = 9'b0_0_11_01_10_1,
-        st_w2_cur_p = 9'b0_1_10_11_01_1,
-        st_wait     = 9'b0_0_00_00_00_1
+    enum logic [9 : 0] {
+        st_req_idle = 10'b0_0_0_00_00_00_0,
+        st_w1_all_p = 10'b0_0_0_11_01_01_1,
+        st_w1_nul_n = 10'b0_1_0_10_01_01_1,
+        st_r1_all_p = 10'b0_1_0_11_01_10_1,
+        st_w1_nul_p = 10'b0_0_0_01_01_01_1,
+        st_w2_cur_n = 10'b0_1_1_01_01_01_1,
+        st_r2_nul_p = 10'b0_0_0_10_01_10_1,
+        st_r2_all_p = 10'b0_0_0_11_01_10_1,
+        st_w2_cur_p = 10'b0_0_1_10_11_01_1,
+        st_wait_ack = 10'b1_0_0_00_00_00_1
     } req_state;
-    wire [8 : 0] req_st;
+    wire [9 : 0] req_st;
     assign req_st = req_state;
     
     //------------------------------------------------------------------------------------
@@ -91,23 +95,38 @@ module mmv_ram_ab_tester
     wire [1 : 0] req_fsm_addr_mode   =  req_st[6 : 5];
     wire         req_fsm_addr_switch =  req_st[7];
     wire         req_fsm_data_switch =  req_st[8];
+    wire         req_fsm_wait_ack    =  req_st[9];
     
     //------------------------------------------------------------------------------------
     //      Кодирование состояний конечного автомата анализа ответов на чтение
+    enum logic [2 : 0] {
+        st_ack_idle = 3'b000,
+        st_chk1_all = 3'b011,
+        st_chk2_nul = 3'b001,
+        st_chk2_all = 3'b111
+    } ack_state;
+    wire [2 : 0] ack_st;
+    assign ack_st = ack_state;
     
     //------------------------------------------------------------------------------------
-    //      Логика переходов управляющего автомата запросов записи/чтения
+    //      Управляющие воздействия автомата анализа ответов на чтение
+    wire ack_fsm_ready = ~ack_st[0];
+    wire ack0_cnt_ena  =  ack_st[1];
+    wire ack1_cnt_ena  =  ack_st[2];
+    
+    //------------------------------------------------------------------------------------
+    //      Логика переходов конечного автомата запросов записи/чтения
     always @(posedge reset, posedge clk)
         if (reset)
-            req_state <= st_idle;
+            req_state <= st_req_idle;
         else if (clear)
-            req_state <= st_idle;
+            req_state <= st_req_idle;
         else case (req_state)
-            st_idle:
+            st_req_idle:
                 if (start)
                     req_state <= st_w1_all_p;
                 else
-                    req_state <= st_idle;
+                    req_state <= st_req_idle;
             
             st_w1_all_p:
                 if (~m_busy & req0_addr_reg[AWIDTH - 1])
@@ -154,17 +173,59 @@ module mmv_ram_ab_tester
             st_w2_cur_p:
                 if (~m_busy)
                     if (req1_addr_reg[AWIDTH - 1])
-                        req_state <= st_wait;
+                        req_state <= st_wait_ack;
                     else
                         req_state <= st_w2_cur_n;
                 else
                     req_state <= st_w2_cur_p;
             
-            st_wait: // TODO: Ожидать готовности от конечного автомата проверки
-                req_state <= st_idle;
+            st_wait_ack:
+                if (ack_fsm_ready)
+                    req_state <= st_req_idle;
+                else
+                    req_state <= st_wait_ack;
             
             default:
-                req_state <= st_idle;
+                req_state <= st_req_idle;
+        endcase
+    
+    //------------------------------------------------------------------------------------
+    //      Логика переходов конечного автомата анализа ответов на чтение
+    always @(posedge reset, posedge clk)
+        if (reset)
+            ack_state <= st_ack_idle;
+        else if (clear)
+            ack_state <= st_ack_idle;
+        else case (ack_state)
+            st_ack_idle:
+                if (start)
+                    ack_state <= st_chk1_all;
+                else
+                    ack_state <= st_ack_idle;
+            
+            st_chk1_all:
+                if (m_rval & (ack0_cnt == (AWIDTH - 1)))
+                    ack_state <= st_chk2_nul;
+                else
+                    ack_state <= st_chk1_all;
+            
+            st_chk2_nul:
+                if (m_rval)
+                    ack_state <= st_chk2_all;
+                else
+                    ack_state <= st_chk2_nul;
+            
+            st_chk2_all:
+                if (m_rval & (ack0_cnt == (AWIDTH - 1)))
+                    if (ack1_cnt == (AWIDTH - 1))
+                        ack_state <= st_ack_idle;
+                    else
+                        ack_state <= st_chk2_nul;
+                else
+                    ack_state <= st_chk2_all;
+            
+            default:
+                ack_state <= st_ack_idle;
         endcase
     
     //------------------------------------------------------------------------------------
@@ -211,5 +272,76 @@ module mmv_ram_ab_tester
     //      Переключение шин адреса и данных для записи
     assign m_addr = req_fsm_addr_switch ? req1_addr_reg : req0_addr_reg;
     assign m_wdat = req_fsm_data_switch ? antipattern : pattern;
+    
+    //------------------------------------------------------------------------------------
+    //      Счетчик #0 ответов на чтение
+    initial ack0_cnt = '0;
+    always @(posedge reset, posedge clk)
+        if (reset)
+            ack0_cnt <= '0;
+        else if (clear)
+            ack0_cnt <= '0;
+        else if (ack0_cnt_ena & m_rval)
+            if (ack0_cnt == (AWIDTH - 1))
+                ack0_cnt <= '0;
+            else
+                ack0_cnt <= ack0_cnt + 1'b1;
+        else
+            ack0_cnt <= ack0_cnt;
+    
+    //------------------------------------------------------------------------------------
+    //      Счетчик #1 ответов на чтение
+    initial ack1_cnt = '0;
+    always @(posedge reset, posedge clk)
+        if (reset)
+            ack1_cnt <= '0;
+        else if (clear)
+            ack1_cnt <= '0;
+        else if (ack1_cnt_ena & m_rval & (ack0_cnt == (AWIDTH - 1)))
+            if (ack1_cnt == (AWIDTH - 1))
+                ack1_cnt <= '0;
+            else
+                ack1_cnt <= ack1_cnt + 1'b1;
+        else
+            ack1_cnt <= ack1_cnt;
+    
+    //------------------------------------------------------------------------------------
+    //      Регистр управления инверсией читаемых данных
+    initial rd_inv_reg = '1;
+    always @(posedge reset, posedge clk)
+        if (reset)
+            rd_inv_reg <= '1;
+        else if (clear)
+            rd_inv_reg <= '1;
+        else if (ack1_cnt_ena & m_rval)
+            rd_inv_reg <= (ack1_cnt - ack0_cnt) == 1;
+        else
+            rd_inv_reg <= rd_inv_reg;
+    
+    //------------------------------------------------------------------------------------
+    //      Логика модификации проверяемых данных
+    assign test_data = {DWIDTH{rd_inv_reg & ack1_cnt_ena}} ^ m_rdat;
+    
+    //------------------------------------------------------------------------------------
+    //      Регистр одиночного импульса окончания теста
+    always @(posedge reset, posedge clk)
+        if (reset)
+            done_reg <= '0;
+        else if (clear)
+            done_reg <= '0;
+        else
+            done_reg <= req_fsm_wait_ack & ack_fsm_ready;
+    assign done = done_reg;
+    
+    //------------------------------------------------------------------------------------
+    //      Регистр одиночного импульса индикации ошибки
+    always @(posedge reset, posedge clk)
+        if (reset)
+            fault_reg <= '0;
+        else if (clear)
+            fault_reg <= '0;
+        else
+            fault_reg <= ~ack_fsm_ready & m_rval & (test_data != pattern);
+    assign fault = fault_reg;
     
 endmodule: mmv_ram_ab_tester

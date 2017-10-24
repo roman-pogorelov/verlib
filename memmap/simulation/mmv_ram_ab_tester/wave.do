@@ -21,9 +21,14 @@ add wave -noupdate /mmv_ram_ab_tester_tb/m_rval
 add wave -noupdate /mmv_ram_ab_tester_tb/m_busy
 add wave -noupdate -divider <NULL>
 add wave -noupdate -divider <NULL>
-add wave -noupdate /mmv_ram_ab_tester_tb/the_mmv_ram_ab_tester/req_state
+add wave -noupdate -color {Cornflower Blue} /mmv_ram_ab_tester_tb/the_mmv_ram_ab_tester/req_state
+add wave -noupdate -color {Dark Orchid} /mmv_ram_ab_tester_tb/the_mmv_ram_ab_tester/ack_state
+add wave -noupdate -divider <NULL>
+add wave -noupdate -color Gold -radix unsigned /mmv_ram_ab_tester_tb/the_mmv_ram_ab_tester/ack0_cnt
+add wave -noupdate -color Gold -radix unsigned /mmv_ram_ab_tester_tb/the_mmv_ram_ab_tester/ack1_cnt
+add wave -noupdate -color Gold /mmv_ram_ab_tester_tb/the_mmv_ram_ab_tester/rd_inv_reg
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {42947 ps} 0}
+WaveRestoreCursors {{Cursor 1} {1840000 ps} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 150
 configure wave -valuecolwidth 100
@@ -39,4 +44,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ps
 update
-WaveRestoreZoom {0 ps} {512 ns}
+WaveRestoreZoom {0 ps} {8192 ns}
