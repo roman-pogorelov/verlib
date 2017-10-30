@@ -141,7 +141,7 @@ module mmv_ram_db_tester
     always @(posedge reset, posedge clk)
         if (reset)
             wdat_reg <= {{DWIDTH - 1{1'b0}}, 1'b1};
-        else if (clear)
+        else if (ready)
             wdat_reg <= {{DWIDTH - 1{1'b0}}, 1'b1};
         else if (m_wreq & ~m_busy)
             wdat_reg <= {wdat_reg[DWIDTH - 2 : 0], wdat_reg[DWIDTH - 1]};
@@ -155,7 +155,7 @@ module mmv_ram_db_tester
     always @(posedge reset, posedge clk)
         if (reset)
             rdat_reg <= {{DWIDTH - 1{1'b0}}, 1'b1};
-        else if (clear)
+        else if (ready)
             rdat_reg <= {{DWIDTH - 1{1'b0}}, 1'b1};
         else if (fsm_work & m_rval)
             rdat_reg <= {rdat_reg[DWIDTH - 2 : 0], rdat_reg[DWIDTH - 1]};
@@ -167,7 +167,7 @@ module mmv_ram_db_tester
     always @(posedge reset, posedge clk)
         if (reset)
             rd_pend_cnt <= '0;
-        else if (clear)
+        else if (ready)
             rd_pend_cnt <= '0;
         else if ((m_rreq & ~m_busy) & ~m_rval)
             rd_pend_cnt <= rd_pend_cnt + 1'b1;
@@ -181,7 +181,7 @@ module mmv_ram_db_tester
     always @(posedge reset, posedge clk)
         if (reset)
             done_reg <= '0;
-        else if (clear)
+        else if (ready)
             done_reg <= '0;
         else
             done_reg <= fsm_wait & (rd_pend_cnt == 0);
@@ -192,7 +192,7 @@ module mmv_ram_db_tester
     always @(posedge reset, posedge clk)
         if (reset)
             fault_reg <= '0;
-        else if (clear)
+        else if (ready)
             fault_reg <= '0;
         else
             fault_reg <= fsm_work & m_rval & (m_rdat != rdat_reg);

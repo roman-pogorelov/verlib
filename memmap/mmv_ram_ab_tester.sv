@@ -242,7 +242,7 @@ module mmv_ram_ab_tester
     always @(posedge reset, posedge clk)
         if (reset)
             req0_addr_reg <= '0;
-        else if (ready | clear)
+        else if (ready)
             req0_addr_reg <= {{AWIDTH - 1{1'b0}}, 1'b1};
         else if (req_fsm_addr_ena[0] & ~m_busy)
             case (req_fsm_addr_mode)
@@ -261,7 +261,7 @@ module mmv_ram_ab_tester
     always @(posedge reset, posedge clk)
         if (reset)
             req1_addr_reg <= '0;
-        else if (ready | clear)
+        else if (ready)
             req1_addr_reg <= {{AWIDTH - 1{1'b0}}, 1'b1};
         else if (req_fsm_addr_ena[1] & ~m_busy)
             req1_addr_reg <= {req1_addr_reg[AWIDTH - 2 : 0], req1_addr_reg[AWIDTH - 1]};
@@ -279,7 +279,7 @@ module mmv_ram_ab_tester
     always @(posedge reset, posedge clk)
         if (reset)
             ack0_cnt <= '0;
-        else if (clear)
+        else if (ready)
             ack0_cnt <= '0;
         else if (ack0_cnt_ena & m_rval)
             if (ack0_cnt == (AWIDTH - 1))
@@ -295,7 +295,7 @@ module mmv_ram_ab_tester
     always @(posedge reset, posedge clk)
         if (reset)
             ack1_cnt <= '0;
-        else if (clear)
+        else if (ready)
             ack1_cnt <= '0;
         else if (ack1_cnt_ena & m_rval & (ack0_cnt == (AWIDTH - 1)))
             if (ack1_cnt == (AWIDTH - 1))
@@ -311,7 +311,7 @@ module mmv_ram_ab_tester
     always @(posedge reset, posedge clk)
         if (reset)
             rd_inv_reg <= '1;
-        else if (clear)
+        else if (ready)
             rd_inv_reg <= '1;
         else if (ack1_cnt_ena & m_rval)
             rd_inv_reg <= (ack1_cnt - ack0_cnt) == 1;
@@ -327,7 +327,7 @@ module mmv_ram_ab_tester
     always @(posedge reset, posedge clk)
         if (reset)
             done_reg <= '0;
-        else if (clear)
+        else if (ready)
             done_reg <= '0;
         else
             done_reg <= req_fsm_wait_ack & ack_fsm_ready;
@@ -338,7 +338,7 @@ module mmv_ram_ab_tester
     always @(posedge reset, posedge clk)
         if (reset)
             fault_reg <= '0;
-        else if (clear)
+        else if (ready)
             fault_reg <= '0;
         else
             fault_reg <= ~ack_fsm_ready & m_rval & (test_data != pattern);

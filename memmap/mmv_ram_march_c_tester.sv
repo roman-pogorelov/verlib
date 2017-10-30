@@ -483,7 +483,7 @@ module mmv_ram_march_c_tester
     always @(posedge reset, posedge clk)
         if (reset)
             done_reg <= '0;
-        else if (clear)
+        else if (ready)
             done_reg <= '0;
         else
             done_reg <= wait_ack & ~ack_busy;
@@ -494,7 +494,7 @@ module mmv_ram_march_c_tester
     always @(posedge reset, posedge clk)
         if (reset)
             fault_reg <= '0;
-        else if (clear)
+        else if (ready)
             fault_reg <= '0;
         else
             fault_reg <= ack_busy & m_rval & (m_rdat != (rpat_dat_reg[0] ^ {DWIDTH{rpat_inv_reg}}));
