@@ -1,12 +1,17 @@
 /*
     //------------------------------------------------------------------------------------
     //      Модель ведомого устройства интерфейса  MemoryMapped с произвольной
-    //      латентностью чтения, реализующую случайную обработку приходящих транзакций
+    //      латентностью чтения. Значение параметра MODE определяет режим работы:
+    //          MODE = "RANDOM"  -  записываемые значения игнорируются,
+    //                              при чтении генерируются случайные данные;
+    //          MODE = "MEMORY"  -  модуль работает в режиме памяти со случайным
+    //                              доступом.
     mmv_slave_model
     #(
         .DWIDTH     (), // Разрядность данных
         .AWIDTH     (), // Разрядность адреса
-        .RDDELAY    ()  // Задержка выдачи данных при чтении (RDDELAY > 0)
+        .RDDELAY    (), // Задержка выдачи данных при чтении (RDDELAY > 0)
+        .MODE       ()  // Режим работы ("RANDOM" | "MEMORY")
     )
     the_mmv_slave_model
     (
@@ -27,9 +32,10 @@
 
 module mmv_slave_model
 #(
-    parameter int unsigned          DWIDTH  = 8,    // Разрядность данных
-    parameter int unsigned          AWIDTH  = 32,   // Разрядность адреса
-    parameter int unsigned          RDDELAY = 2     // Задержка выдачи данных при чтении (RDDELAY > 0)
+    parameter int unsigned          DWIDTH  = 8,        // Разрядность данных
+    parameter int unsigned          AWIDTH  = 32,       // Разрядность адреса
+    parameter int unsigned          RDDELAY = 2,        // Задержка выдачи данных при чтении (RDDELAY > 0)
+    parameter string                MODE    = "RANDOM"  // Режим работы ("RANDOM" | "MEMORY")
 )
 (
     // Тактирование и сброс
@@ -47,7 +53,7 @@ module mmv_slave_model
 );
     //------------------------------------------------------------------------------------
     //      Объявление сигналов
-    logic [DWIDTH - 1 : 0]                  random_value;
+    logic [DWIDTH - 1 : 0]                  read_value;
     logic [RDDELAY - 1 : 0][DWIDTH - 1 : 0] rdat_delayline;
     logic [RDDELAY - 1 : 0]                 rval_delayline;
     logic                                   waiting_request;
@@ -64,12 +70,31 @@ module mmv_slave_model
             s_busy <= $random;
     
     //------------------------------------------------------------------------------------
-    //      Формирование случайного значения
-    always @(posedge reset, posedge clk)
-        if (reset)
-            random_value <= '0;
-        else
-            random_value <= $random;
+    //      Формирование считываемого значения
+    generate
+        // Режим памяти со случайным доступом
+        if (MODE == "MEMORY") begin: memory_implementation
+            logic [2**AWIDTH - 1 : 0][DWIDTH - 1 : 0] mem;
+            initial mem = 'x;
+            always @(posedge reset, posedge clk)
+                if (reset)
+                    mem <= 'x;
+                else if (s_wreq & ~s_busy)
+                    mem[s_addr] <= s_wdat;
+                else
+                    mem <= mem;
+            assign read_value = mem[s_addr];
+        end
+        
+        // Режим чтения случайных значений
+        else begin: random_implementation
+            always @(posedge reset, posedge clk)
+                if (reset)
+                    read_value <= '0;
+                else
+                    read_value <= $random;
+                end
+    endgenerate
     
     //------------------------------------------------------------------------------------
     //      Линия задержки данных при чтении
@@ -77,9 +102,9 @@ module mmv_slave_model
         if (reset)
             rdat_delayline <= 'x;
         else if (RDDELAY > 1)
-            rdat_delayline <= {rdat_delayline[RDDELAY - 2 : 0], ((s_rreq & ~s_busy) ? random_value : {DWIDTH{1'bx}})};
+            rdat_delayline <= {rdat_delayline[RDDELAY - 2 : 0], ((s_rreq & ~s_busy) ? read_value : {DWIDTH{1'bx}})};
         else
-            rdat_delayline <= (s_rreq & ~s_busy) ? random_value : {DWIDTH{1'bx}};
+            rdat_delayline <= (s_rreq & ~s_busy) ? read_value : {DWIDTH{1'bx}};
     assign s_rdat = rdat_delayline[RDDELAY - 1];
     
     //------------------------------------------------------------------------------------
