@@ -4,4 +4,8 @@ wlf*
 *.wlf
 *.vstf
 *.ini
+*.ver
 vsim.dbg
+
+# Резервные копии Matlab
+*.asv
