@@ -1,5 +1,5 @@
 `timescale  1ns / 1ps
-module ps_mm_bst_buffer_tb ();
+module ps_mmb_buffer_tb ();
     
     //------------------------------------------------------------------------------------
     //      Описание констант
@@ -76,7 +76,7 @@ module ps_mm_bst_buffer_tb ();
     //------------------------------------------------------------------------------------
     //      Модуль буферизации потокового интерфейса PacketStream в память с интерфейсом
     //      MemoryMapped с пакетным доступом
-    ps_mm_bst_buffer
+    ps_mmb_buffer
     #(
         .DWIDTH     (DWIDTH),   // Разрядность потоковых интерфейсов
         .AWIDTH     (AWIDTH),   // Разрядность адреса интерфейса MemoryMapped
@@ -85,7 +85,7 @@ module ps_mm_bst_buffer_tb ();
         .ERATIO     (ERATIO),   // Отношение разрядности интерфейса MemoryMapped к разрядности потока
         .RAMTYPE    (RAMTYPE)   // Тип ресурса для реализации внутренних буферов
     )
-    the_ps_mm_bst_buffer
+    the_ps_mmb_buffer
     (
         // Сброс и тактирование
         .reset      (reset),    // i
@@ -112,7 +112,7 @@ module ps_mm_bst_buffer_tb ();
         .m_rdat     (m_rdat),   // i  [ERATIO*DWIDTH - 1 : 0]
         .m_rval     (m_rval),   // i
         .m_busy     (m_busy)    // i
-    ); // the_ps_mm_bst_buffer
+    ); // the_ps_mmb_buffer
     
     //------------------------------------------------------------------------------------
     //      Модель памяти с пакетным доступом по интерфейсу AvalonMM
@@ -227,4 +227,4 @@ module ps_mm_bst_buffer_tb ();
     always @(posedge clk)
         rack_word_cnt <= rack_word_cnt + m_rval;
     
-endmodule: ps_mm_bst_buffer_tb
+endmodule: ps_mmb_buffer_tb

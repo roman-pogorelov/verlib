@@ -2,7 +2,7 @@
     //------------------------------------------------------------------------------------
     //      Модуль буферизации потокового интерфейса PacketStream в память с интерфейсом
     //      MemoryMapped с пакетным доступом
-    ps_mm_bst_buffer
+    ps_mmb_buffer
     #(
         .DWIDTH     (), // Разрядность потоковых интерфейсов
         .AWIDTH     (), // Разрядность адреса интерфейса MemoryMapped
@@ -11,7 +11,7 @@
         .ERATIO     (), // Отношение разрядности интерфейса MemoryMapped к разрядности потока
         .RAMTYPE    ()  // Тип ресурса для реализации внутренних буферов
     )
-    the_ps_mm_bst_buffer
+    the_ps_mmb_buffer
     (
         // Сброс и тактирование
         .reset      (), // i
@@ -38,10 +38,10 @@
         .m_rdat     (), // i  [ERATIO*DWIDTH - 1 : 0]
         .m_rval     (), // i
         .m_busy     ()  // i
-    ); // the_ps_mm_bst_buffer
+    ); // the_ps_mmb_buffer
 */
 
-module ps_mm_bst_buffer
+module ps_mmb_buffer
 #(
     parameter int unsigned                  DWIDTH  = 8,        // Разрядность потоковых интерфейсов
     parameter int unsigned                  AWIDTH  = 8,        // Разрядность адреса интерфейса MemoryMapped
@@ -165,7 +165,7 @@ module ps_mm_bst_buffer
     //------------------------------------------------------------------------------------
     //      Модуль буферизации потокового интерфейса DataStream в память с интерфейсом
     //      MemoryMapped с пакетным доступом
-    ds_mm_bst_buffer
+    ds_mmb_buffer
     #(
         .DWIDTH     (ERATIO*DWIDTH),        // Разрядность данных
         .AWIDTH     (AWIDTH),               // Разрядность адреса
@@ -174,7 +174,7 @@ module ps_mm_bst_buffer
         .ODEPTH     (SEGLEN/ERATIO + 2),    // Размер выходного буфера
         .RAMTYPE    (RAMTYPE)               // Тип ресурса для реализации входного и выходного буфера
     )
-    the_ds_mm_bst_buffer
+    the_ds_mmb_buffer
     (
         // Сброс и тактирование
         .reset      (reset),                // i
@@ -199,7 +199,7 @@ module ps_mm_bst_buffer
         .m_rdat     (m_rdat),               // i  [DWIDTH - 1 : 0]
         .m_rval     (m_rval),               // i
         .m_busy     (m_busy)                // i
-    ); // the_ds_mm_bst_buffer
+    ); // the_ds_mmb_buffer
     
     //------------------------------------------------------------------------------------
     //      Сужение разрядности при ERATIO > 1
@@ -262,4 +262,4 @@ module ps_mm_bst_buffer
         .o_rdy      (o_rdy)         // i
     ); // ps_defragmenter_unpacker
     
-endmodule: ps_mm_bst_buffer
+endmodule: ps_mmb_buffer

@@ -1,44 +1,44 @@
 onerror {resume}
 quietly WaveActivateNextPane {} 0
-add wave -noupdate -radix unsigned /ds_mm_bst_buffer_tb/DWIDTH
-add wave -noupdate -radix unsigned /ds_mm_bst_buffer_tb/AWIDTH
-add wave -noupdate -radix unsigned /ds_mm_bst_buffer_tb/BWIDTH
-add wave -noupdate -radix unsigned /ds_mm_bst_buffer_tb/IDEPTH
-add wave -noupdate -radix unsigned /ds_mm_bst_buffer_tb/ODEPTH
+add wave -noupdate -radix unsigned /ds_mmb_buffer_tb/DWIDTH
+add wave -noupdate -radix unsigned /ds_mmb_buffer_tb/AWIDTH
+add wave -noupdate -radix unsigned /ds_mmb_buffer_tb/BWIDTH
+add wave -noupdate -radix unsigned /ds_mmb_buffer_tb/IDEPTH
+add wave -noupdate -radix unsigned /ds_mmb_buffer_tb/ODEPTH
 add wave -noupdate -divider <NULL>
-add wave -noupdate /ds_mm_bst_buffer_tb/reset
-add wave -noupdate /ds_mm_bst_buffer_tb/clk
+add wave -noupdate /ds_mmb_buffer_tb/reset
+add wave -noupdate /ds_mmb_buffer_tb/clk
 add wave -noupdate -divider <NULL>
-add wave -noupdate -radix hexadecimal /ds_mm_bst_buffer_tb/i_dat
-add wave -noupdate /ds_mm_bst_buffer_tb/i_val
-add wave -noupdate /ds_mm_bst_buffer_tb/i_rdy
+add wave -noupdate -radix hexadecimal /ds_mmb_buffer_tb/i_dat
+add wave -noupdate /ds_mmb_buffer_tb/i_val
+add wave -noupdate /ds_mmb_buffer_tb/i_rdy
 add wave -noupdate -divider <NULL>
-add wave -noupdate -radix hexadecimal /ds_mm_bst_buffer_tb/o_dat
-add wave -noupdate /ds_mm_bst_buffer_tb/o_val
-add wave -noupdate /ds_mm_bst_buffer_tb/o_rdy
+add wave -noupdate -radix hexadecimal /ds_mmb_buffer_tb/o_dat
+add wave -noupdate /ds_mmb_buffer_tb/o_val
+add wave -noupdate /ds_mmb_buffer_tb/o_rdy
 add wave -noupdate -divider <NULL>
-add wave -noupdate -radix hexadecimal /ds_mm_bst_buffer_tb/m_addr
-add wave -noupdate -radix hexadecimal /ds_mm_bst_buffer_tb/m_bcnt
-add wave -noupdate /ds_mm_bst_buffer_tb/m_wreq
-add wave -noupdate -radix hexadecimal /ds_mm_bst_buffer_tb/m_wdat
-add wave -noupdate /ds_mm_bst_buffer_tb/m_rreq
-add wave -noupdate -radix hexadecimal /ds_mm_bst_buffer_tb/m_rdat
-add wave -noupdate /ds_mm_bst_buffer_tb/m_rval
-add wave -noupdate /ds_mm_bst_buffer_tb/m_busy
+add wave -noupdate -radix hexadecimal /ds_mmb_buffer_tb/m_addr
+add wave -noupdate -radix hexadecimal /ds_mmb_buffer_tb/m_bcnt
+add wave -noupdate /ds_mmb_buffer_tb/m_wreq
+add wave -noupdate -radix hexadecimal /ds_mmb_buffer_tb/m_wdat
+add wave -noupdate /ds_mmb_buffer_tb/m_rreq
+add wave -noupdate -radix hexadecimal /ds_mmb_buffer_tb/m_rdat
+add wave -noupdate /ds_mmb_buffer_tb/m_rval
+add wave -noupdate /ds_mmb_buffer_tb/m_busy
 add wave -noupdate -divider <NULL>
-add wave -noupdate -radix unsigned /ds_mm_bst_buffer_tb/i_word_cnt
-add wave -noupdate -radix unsigned /ds_mm_bst_buffer_tb/o_word_cnt
-add wave -noupdate -radix unsigned /ds_mm_bst_buffer_tb/wreq_word_cnt
-add wave -noupdate -radix unsigned /ds_mm_bst_buffer_tb/rreq_word_cnt
-add wave -noupdate -radix unsigned /ds_mm_bst_buffer_tb/rack_word_cnt
+add wave -noupdate -radix unsigned /ds_mmb_buffer_tb/i_word_cnt
+add wave -noupdate -radix unsigned /ds_mmb_buffer_tb/o_word_cnt
+add wave -noupdate -radix unsigned /ds_mmb_buffer_tb/wreq_word_cnt
+add wave -noupdate -radix unsigned /ds_mmb_buffer_tb/rreq_word_cnt
+add wave -noupdate -radix unsigned /ds_mmb_buffer_tb/rack_word_cnt
 add wave -noupdate -divider <NULL>
-add wave -noupdate -color Salmon /ds_mm_bst_buffer_tb/the_ds_mm_bst_buffer/state
-add wave -noupdate -radix unsigned /ds_mm_bst_buffer_tb/the_ds_mm_bst_buffer/ififo_used
-add wave -noupdate -radix unsigned /ds_mm_bst_buffer_tb/the_ds_mm_bst_buffer/free_cnt
-add wave -noupdate -radix unsigned /ds_mm_bst_buffer_tb/the_ds_mm_bst_buffer/wr_bcnt_max
-add wave -noupdate -radix unsigned /ds_mm_bst_buffer_tb/the_ds_mm_bst_buffer/wr_bcnt_reg
-add wave -noupdate -radix unsigned /ds_mm_bst_buffer_tb/the_ds_mm_bst_buffer/wr_bcnt_cnt
-add wave -noupdate -radix hexadecimal /ds_mm_bst_buffer_tb/the_avl_vlb_memory_model/memory
+add wave -noupdate -color Salmon /ds_mmb_buffer_tb/the_ds_mmb_buffer/state
+add wave -noupdate -radix unsigned /ds_mmb_buffer_tb/the_ds_mmb_buffer/ififo_used
+add wave -noupdate -radix unsigned /ds_mmb_buffer_tb/the_ds_mmb_buffer/free_cnt
+add wave -noupdate -radix unsigned /ds_mmb_buffer_tb/the_ds_mmb_buffer/wr_bcnt_max
+add wave -noupdate -radix unsigned /ds_mmb_buffer_tb/the_ds_mmb_buffer/wr_bcnt_reg
+add wave -noupdate -radix unsigned /ds_mmb_buffer_tb/the_ds_mmb_buffer/wr_bcnt_cnt
+add wave -noupdate -radix hexadecimal /ds_mmb_buffer_tb/the_avl_vlb_memory_model/memory
 TreeUpdate [SetDefaultTree]
 WaveRestoreCursors {{Cursor 1} {2559493 ps} 0}
 quietly wave cursor active 1

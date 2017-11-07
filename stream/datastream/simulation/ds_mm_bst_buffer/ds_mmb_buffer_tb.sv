@@ -1,5 +1,5 @@
 `timescale  1ns / 1ps
-module ds_mm_bst_buffer_tb ();
+module ds_mmb_buffer_tb ();
     
     //------------------------------------------------------------------------------------
     //      Описание констант
@@ -68,7 +68,7 @@ module ds_mm_bst_buffer_tb ();
     //------------------------------------------------------------------------------------
     //      Модуль буферизации потокового интерфейса DataStream в память с интерфейсом
     //      MemoryMapped с пакетным доступом
-    ds_mm_bst_buffer
+    ds_mmb_buffer
     #(
         .DWIDTH     (DWIDTH),   // Разрядность данных
         .AWIDTH     (AWIDTH),   // Разрядность адреса
@@ -77,7 +77,7 @@ module ds_mm_bst_buffer_tb ();
         .ODEPTH     (ODEPTH),   // Размер выходного буфера
         .RAMTYPE    (RAMTYPE)   // Тип ресурса для реализации входного и выходного буфера
     )
-    the_ds_mm_bst_buffer
+    the_ds_mmb_buffer
     (
         // Сброс и тактирование
         .reset      (reset),    // i
@@ -102,7 +102,7 @@ module ds_mm_bst_buffer_tb ();
         .m_rdat     (m_rdat),   // i  [DWIDTH - 1 : 0]
         .m_rval     (m_rval),   // i
         .m_busy     (m_busy)    // i
-    ); // the_ds_mm_bst_buffer
+    ); // the_ds_mmb_buffer
     
     //------------------------------------------------------------------------------------
     //      Модель памяти с пакетным доступом по интерфейсу AvalonMM
@@ -195,4 +195,4 @@ module ds_mm_bst_buffer_tb ();
     always @(posedge clk)
         rack_word_cnt <= rack_word_cnt + m_rval;
     
-endmodule: ds_mm_bst_buffer_tb
+endmodule: ds_mmb_buffer_tb
