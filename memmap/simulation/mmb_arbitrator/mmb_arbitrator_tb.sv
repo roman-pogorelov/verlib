@@ -7,10 +7,11 @@ module mmb_arbitrator_tb ();
     localparam int unsigned                 DWIDTH      = 8;        // Разрядность данных
     localparam int unsigned                 BWIDTH      = 4;        // Разрядность размера пакета
     localparam int unsigned                 MASTERS     = 2;        // Количество подключаемых ведущих (MASTERS > 1)
-    localparam int unsigned                 RDPENDS     = 2;        // Максимальное количество незавершенных транзакций чтения
+    localparam int unsigned                 RDPENDS     = 1;        // Максимальное количество незавершенных транзакций чтения
     localparam string                       SCHEME      = "RR";     // Схема арбитража ("RR" - циклическая; "FP" - фиксированная)
     localparam                              RAMTYPE     = "AUTO";   // Тип блоков встроенной памяти ("MLAB"; "M20K"; ...)
-    localparam                              RDLATENCY   = 8;        // Задержка при выполнении операции чтения
+    localparam int unsigned                 RDDELAY     = 8;        // Задержка выдачи данных при чтении (RDDELAY > 0)
+    localparam string                       MODE        = "MEMORY"; // Режим работы ("RANDOM" | "MEMORY")
     
     //------------------------------------------------------------------------------------
     //      Объявление сигналов
@@ -144,29 +145,36 @@ module mmb_arbitrator_tb ();
     ); // the_mmb_reg_buffer
     
     //------------------------------------------------------------------------------------
-    //      Модель памяти с пакетным доступом по интерфейсу AvalonMM
-    avl_vlb_memory_model
+    //      Модель ведомого устройства интерфейса  MemoryMapped с пакетным доступом.
+    //      Значение параметра MODE определяет режим работы:
+    //          MODE = "RANDOM"  -  записываемые значения игнорируются,
+    //                              при чтении генерируются случайные данные;
+    //          MODE = "MEMORY"  -  модуль работает в режиме памяти со случайным
+    //                              доступом.
+    mmb_slave_model
     #(
-        .DWIDTH             (DWIDTH),   // Разрядность данных
-        .AWIDTH             (AWIDTH),   // Разрядность адреса
-        .BWIDTH             (BWIDTH),   // Разрядность шины управления пакетным доступом
-        .RDLATENCY          (RDLATENCY) // Задержка при выполнении операции чтения
+        .DWIDTH     (DWIDTH),       // Разрядность данных
+        .AWIDTH     (AWIDTH),       // Разрядность адреса
+        .BWIDTH     (BWIDTH),       // Разрядность размера пакета
+        .RDDELAY    (RDDELAY),      // Задержка выдачи данных при чтении (RDDELAY > 0)
+        .RDPENDS    (RDPENDS),      // Максимальное количество незавершенных чтений
+        .MODE       (MODE)          // Режим работы ("RANDOM" | "MEMORY")
     )
-    the_avl_vlb_memory_model
+    the_mmb_slave_model
     (
-        // Сброс и тактирование
-        .reset              (reset),    // i
-        .clk                (clk),      // i
+        // Тактирование и сброс
+        .reset      (reset),        // i 
+        .clk        (clk),          // i
         
-        // Интерфейс Avalon MM slave
-        .avs_address        (m_addr),   // i  [AWIDTH - 1 : 0]
-        .avs_burstcount     (m_bcnt),   // i  [BWIDTH - 1 : 0]
-        .avs_write          (m_wreq),   // i
-        .avs_writedata      (m_wdat),   // i  [DWIDTH - 1 : 0]
-        .avs_read           (m_rreq),   // i
-        .avs_readdata       (m_rdat),   // o  [DWIDTH - 1 : 0]
-        .avs_readdatavalid  (m_rval),   // o
-        .avs_waitrequest    (m_busy)    // o
-    ); // the_avl_vlb_memory_model
+        // Интерфейс MemoryMapped (ведомый)
+        .s_addr     (m_addr),       // i  [AWIDTH - 1 : 0]
+        .s_bcnt     (m_bcnt),       // i  [BWIDTH - 1 : 0]
+        .s_wreq     (m_wreq),       // i
+        .s_wdat     (m_wdat),       // i  [DWIDTH - 1 : 0]
+        .s_rreq     (m_rreq),       // i
+        .s_rdat     (m_rdat),       // o  [DWIDTH - 1 : 0]
+        .s_rval     (m_rval),       // o
+        .s_busy     (m_busy)        // o
+    ); // mmb_slave_model
     
 endmodule: mmb_arbitrator_tb
