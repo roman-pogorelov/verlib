@@ -7,11 +7,11 @@ module mmb_arbitrator_tb ();
     localparam int unsigned                 DWIDTH      = 8;        // Разрядность данных
     localparam int unsigned                 BWIDTH      = 4;        // Разрядность размера пакета
     localparam int unsigned                 MASTERS     = 2;        // Количество подключаемых ведущих (MASTERS > 1)
-    localparam int unsigned                 RDPENDS     = 1;        // Максимальное количество незавершенных транзакций чтения
+    localparam int unsigned                 RDPENDS     = 3;        // Максимальное количество незавершенных транзакций чтения
     localparam string                       SCHEME      = "RR";     // Схема арбитража ("RR" - циклическая; "FP" - фиксированная)
     localparam                              RAMTYPE     = "AUTO";   // Тип блоков встроенной памяти ("MLAB"; "M20K"; ...)
     localparam int unsigned                 RDDELAY     = 8;        // Задержка выдачи данных при чтении (RDDELAY > 0)
-    localparam string                       MODE        = "MEMORY"; // Режим работы ("RANDOM" | "MEMORY")
+    localparam string                       MODE        = "RANDOM"; // Режим работы ("RANDOM" | "MEMORY")
     
     //------------------------------------------------------------------------------------
     //      Объявление сигналов
@@ -59,14 +59,30 @@ module mmb_arbitrator_tb ();
     always  clk = #5 ~clk;
     
     //------------------------------------------------------------------------------------
-    //      Инициализация
-    initial begin
-        s_addr = 0;
-        s_bcnt = 0;
-        s_wreq = 0;
-        s_wdat = 0;
-        s_rreq = 0;
-    end
+    //      Модель ведущего устройства интерфейса MemoryMapped с пакетным доступом,
+    //      реализующая непрерывную генерацию случайных транзакций
+    mmb_master_model
+    #(
+        .DWIDTH     (DWIDTH),           // Разрядность данных
+        .AWIDTH     (AWIDTH),           // Разрядность адреса
+        .BWIDTH     (BWIDTH)            // Разрядность размера пакета
+    )
+    the_mmb_master_model [MASTERS - 1 : 0]
+    (
+        // Тактирование и сброс
+        .reset      ({MASTERS{reset}}), // i
+        .clk        ({MASTERS{clk}}),   // i
+        
+        // Интерфейс MemoryMapped (ведомый)
+        .m_addr     (s_addr),           // o  [AWIDTH - 1 : 0]
+        .m_bcnt     (s_bcnt),           // o  [BWIDTH - 1 : 0]
+        .m_wreq     (s_wreq),           // o
+        .m_wdat     (s_wdat),           // o  [DWIDTH - 1 : 0]
+        .m_rreq     (s_rreq),           // o
+        .m_rdat     (s_rdat),           // i  [DWIDTH - 1 : 0]
+        .m_rval     (s_rval),           // i
+        .m_busy     (s_busy)            // i
+    ); // the_mmb_master_model
     
     //------------------------------------------------------------------------------------
     //      Арбитр доступа нескольких ведущих интерфейса MemoryMapped с пакетным
