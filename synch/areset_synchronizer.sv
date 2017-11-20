@@ -23,8 +23,8 @@
 
 //------------------------------------------------------------------------------------
 //      Требования для синтеза и проверки временных соотношений Altera
-`define ALT_ATTR_STAGE0 "-name SYNCHRONIZER_IDENTIFICATION FORCED_IF_ASYNCHRONOUS; -name DONT_MERGE_REGISTER ON; -name PRESERVE_REGISTER ON; -name SDC_STATEMENT \"set_false_path -to [get_keepers {*areset_synchronizer:*|stage0[*]}]\" "
-`define ALT_ATTR_STAGES "-name SYNCHRONIZER_IDENTIFICATION FORCED_IF_ASYNCHRONOUS; -name DONT_MERGE_REGISTER ON; -name PRESERVE_REGISTER ON"
+`define ALT_ATTR_STAGE0 "-name SYNCHRONIZER_IDENTIFICATION FORCED_IF_ASYNCHRONOUS; -name DONT_MERGE_REGISTER ON; -name PRESERVE_REGISTER ON; -name SDC_STATEMENT \"set_false_path -through [get_pins -compatibility_mode {*areset_synchronizer*stage0|clrn}] -to [get_registers {*areset_synchronizer:*|stage0}]\" "
+`define ALT_ATTR_STAGES "-name SYNCHRONIZER_IDENTIFICATION FORCED_IF_ASYNCHRONOUS; -name DONT_MERGE_REGISTER ON; -name PRESERVE_REGISTER ON; -name SDC_STATEMENT \"set_false_path -through [get_pins -compatibility_mode {*areset_synchronizer*stage_chain[*]|clrn}] -to [get_registers {*areset_synchronizer:*|stage_chain[*]}]\" "
 
 module areset_synchronizer
 #(

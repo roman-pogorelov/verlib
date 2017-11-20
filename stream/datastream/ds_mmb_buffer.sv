@@ -2,7 +2,7 @@
     //------------------------------------------------------------------------------------
     //      Модуль буферизации потокового интерфейса DataStream в память с интерфейсом
     //      MemoryMapped с пакетным доступом
-    ds_mm_bst_buffer
+    ds_mmb_buffer
     #(
         .DWIDTH     (), // Разрядность данных
         .AWIDTH     (), // Разрядность адреса
@@ -11,7 +11,7 @@
         .ODEPTH     (), // Размер выходного буфера
         .RAMTYPE    ()  // Тип ресурса для реализации входного и выходного буфера
     )
-    the_ds_mm_bst_buffer
+    the_ds_mmb_buffer
     (
         // Сброс и тактирование
         .reset      (), // i
@@ -36,10 +36,10 @@
         .m_rdat     (), // i  [DWIDTH - 1 : 0]
         .m_rval     (), // i
         .m_busy     ()  // i
-    ); // the_ds_mm_bst_buffer
+    ); // the_ds_mmb_buffer
 */
 
-module ds_mm_bst_buffer
+module ds_mmb_buffer
 #(
     parameter int unsigned              DWIDTH  = 8,        // Разрядность данных
     parameter int unsigned              AWIDTH  = 8,        // Разрядность адреса
@@ -413,4 +413,4 @@ module ds_mm_bst_buffer
     assign m_wreq = fsm_wr_req;
     assign m_rreq = fsm_rd_req;
     
-endmodule: ds_mm_bst_buffer
+endmodule: ds_mmb_buffer
