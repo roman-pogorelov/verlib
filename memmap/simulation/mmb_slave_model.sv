@@ -30,7 +30,7 @@
         .s_rdat     (), // o  [DWIDTH - 1 : 0]
         .s_rval     (), // o
         .s_busy     ()  // o
-    ); // mmb_slave_model
+    ); // the_mmb_slave_model
 */
 
 module mmb_slave_model
