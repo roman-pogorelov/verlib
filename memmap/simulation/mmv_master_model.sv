@@ -70,12 +70,12 @@ module mmv_master_model
                     request = '0;
                 end
             end
-            else begin
-                reqtype =  $random;
-                m_addr  =  $random;
-                m_wdat  =  $random;
+            if (~request) begin
+                request = $random;
+                reqtype = $random;
+                m_addr  = $random;
+                m_wdat  = $random;
             end
-            request = request | $random;
         end
     assign m_wreq =  reqtype & request;
     assign m_rreq = ~reqtype & request;
