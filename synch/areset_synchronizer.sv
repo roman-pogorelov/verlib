@@ -21,11 +21,6 @@
     ); // the_areset_synchronizer
 */
 
-//------------------------------------------------------------------------------------
-//      Требования для синтеза и проверки временных соотношений Altera
-`define ALT_ATTR_STAGE0 "-name SYNCHRONIZER_IDENTIFICATION FORCED_IF_ASYNCHRONOUS; -name DONT_MERGE_REGISTER ON; -name PRESERVE_REGISTER ON; -name SDC_STATEMENT \"set_false_path -through [get_pins -compatibility_mode {*areset_synchronizer*stage0|clrn}] -to [get_registers {*areset_synchronizer:*|stage0}]\" "
-`define ALT_ATTR_STAGES "-name SYNCHRONIZER_IDENTIFICATION FORCED_IF_ASYNCHRONOUS; -name DONT_MERGE_REGISTER ON; -name PRESERVE_REGISTER ON; -name SDC_STATEMENT \"set_false_path -through [get_pins -compatibility_mode {*areset_synchronizer*stage_chain[*]|clrn}] -to [get_registers {*areset_synchronizer:*|stage_chain[*]}]\" "
-
 module areset_synchronizer
 #(
     parameter int unsigned  EXTRA_STAGES = 1,   // Количество дополнительных ступеней цепи синхронизации
@@ -48,9 +43,9 @@ module areset_synchronizer
     localparam int unsigned STAGES = 1 + EXTRA_STAGES;  // Общее количество ступеней цепи синхронизации 
     
     //------------------------------------------------------------------------------------
-    //      Объявление сигналов
-    (* altera_attribute = {`ALT_ATTR_STAGE0} *) reg                     stage0;
-    (* altera_attribute = {`ALT_ATTR_STAGES} *) reg [STAGES - 1 : 0]    stage_chain;
+    //      Объявление сигналов с учетом требований синтеза и проверки Altera
+    (* altera_attribute = {"-name SYNCHRONIZER_IDENTIFICATION FORCED_IF_ASYNCHRONOUS; -name DONT_MERGE_REGISTER ON; -name PRESERVE_REGISTER ON; -name SDC_STATEMENT \"set_false_path -through [get_pins -compatibility_mode {*areset_synchronizer*stage0|clrn}] -to [get_registers {*areset_synchronizer:*|stage0}]\" "} *) reg stage0;
+    (* altera_attribute = {"-name SYNCHRONIZER_IDENTIFICATION FORCED_IF_ASYNCHRONOUS; -name DONT_MERGE_REGISTER ON; -name PRESERVE_REGISTER ON; -name SDC_STATEMENT \"set_false_path -through [get_pins -compatibility_mode {*areset_synchronizer*stage_chain[*]|clrn}] -to [get_registers {*areset_synchronizer:*|stage_chain[*]}]\" "} *) reg [STAGES - 1 : 0] stage_chain;
     
     //------------------------------------------------------------------------------------
     //      Входной асинхронный сброс с учетом различного активного уровня

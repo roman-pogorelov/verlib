@@ -21,11 +21,6 @@
     ); // the_ff_synchronizer
 */
 
-//------------------------------------------------------------------------------------
-//      Требования для синтеза и проверки временных соотношений Altera
-`define ALT_ATTR_STAGE0 "-name SYNCHRONIZER_IDENTIFICATION FORCED_IF_ASYNCHRONOUS; -name DONT_MERGE_REGISTER ON; -name PRESERVE_REGISTER ON; -name SDC_STATEMENT \"set_false_path -to [get_keepers {*ff_synchronizer:*|stage0[*]}]\" "
-`define ALT_ATTR_STAGES "-name SYNCHRONIZER_IDENTIFICATION FORCED_IF_ASYNCHRONOUS; -name DONT_MERGE_REGISTER ON; -name PRESERVE_REGISTER ON"
-
 module ff_synchronizer
 #(
     parameter int unsigned          WIDTH        = 1,   // Разрядность синхронизируемой шины
@@ -48,9 +43,9 @@ module ff_synchronizer
     localparam int unsigned STAGES = 1 + EXTRA_STAGES;  // Общее количество ступеней цепи синхронизации 
     
     //------------------------------------------------------------------------------------
-    //      Объявление сигналов
-    (* altera_attribute = {`ALT_ATTR_STAGE0} *) reg [WIDTH - 1 : 0]                 stage0;
-    (* altera_attribute = {`ALT_ATTR_STAGES} *) reg [STAGES - 1 : 0][WIDTH - 1 : 0] stage_chain;
+    //      Объявление сигналов с учетом требований синтеза и проверки Altera
+    (* altera_attribute = {"-name SYNCHRONIZER_IDENTIFICATION FORCED_IF_ASYNCHRONOUS; -name DONT_MERGE_REGISTER ON; -name PRESERVE_REGISTER ON; -name SDC_STATEMENT \"set_false_path -to [get_keepers {*ff_synchronizer:*|stage0[*]}]\" "} *) reg [WIDTH - 1 : 0] stage0;
+    (* altera_attribute = {"-name SYNCHRONIZER_IDENTIFICATION FORCED_IF_ASYNCHRONOUS; -name DONT_MERGE_REGISTER ON; -name PRESERVE_REGISTER ON"} *) reg [STAGES - 1 : 0][WIDTH - 1 : 0] stage_chain;
     
     //------------------------------------------------------------------------------------
     //      Первая ступень цепи синхронизации

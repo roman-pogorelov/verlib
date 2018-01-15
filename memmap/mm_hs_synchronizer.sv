@@ -37,11 +37,6 @@
     ); // the_mm_hs_synchronizer
 */
 
-//------------------------------------------------------------------------------------
-//      Требования для синтеза и проверки временных соотношений Altera
-`define ALT_ATTR_S2M "-name DONT_MERGE_REGISTER ON; -name PRESERVE_REGISTER ON; -name SDC_STATEMENT \"set_false_path -from [get_keepers {*mm_hs_synchronizer:*|s2m_hld_reg[*]}]\" "
-`define ALT_ATTR_M2S "-name DONT_MERGE_REGISTER ON; -name PRESERVE_REGISTER ON; -name SDC_STATEMENT \"set_false_path -from [get_keepers {*mm_hs_synchronizer:*|m2s_hld_reg[*]}]\" "
-
 module mm_hs_synchronizer
 #(
     parameter int unsigned          AWIDTH  = 8,    // Разрядность адреса
@@ -80,9 +75,11 @@ module mm_hs_synchronizer
     logic                           hs_src_rdy;
     logic                           hs_dst_req;
     logic                           npending_reg;
-    //
-    (* altera_attribute = {`ALT_ATTR_S2M} *) reg [AWIDTH + DWIDTH + 1 : 0] s2m_hld_reg;
-    (* altera_attribute = {`ALT_ATTR_M2S} *) reg [DWIDTH - 1 : 0]          m2s_hld_reg;
+    
+    //------------------------------------------------------------------------------------
+    //      Объявление сигналов с учетом требований синтеза и проверки Altera
+    (* altera_attribute = {"-name DONT_MERGE_REGISTER ON; -name PRESERVE_REGISTER ON; -name SDC_STATEMENT \"set_false_path -from [get_keepers {*mm_hs_synchronizer:*|s2m_hld_reg[*]}]\" "} *) reg [AWIDTH + DWIDTH + 1 : 0] s2m_hld_reg;
+    (* altera_attribute = {"-name DONT_MERGE_REGISTER ON; -name PRESERVE_REGISTER ON; -name SDC_STATEMENT \"set_false_path -from [get_keepers {*mm_hs_synchronizer:*|m2s_hld_reg[*]}]\" "} *) reg [DWIDTH - 1 : 0] m2s_hld_reg;
     
     //------------------------------------------------------------------------------------
     //      Сигнал произвольного доступа (запись или чтение)

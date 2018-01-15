@@ -39,14 +39,13 @@ module freq_estimator
     logic [$clog2(PERIOD) - 1 : 0]                  ref_tick_cnt;
     logic                                           ref_stb_reg;
     logic [$clog2(FACTOR*PERIOD) - 1 : 0]           est_tick_cnt;
-    logic [1 : 0][$clog2(FACTOR*PERIOD) - 1 : 0]    est_tick_sync_reg;
     logic [$clog2(FACTOR*PERIOD) - 1 : 0]           est_tick_curr;
     logic [$clog2(FACTOR*PERIOD) - 1 : 0]           est_tick_prev_reg;
     logic [$clog2(FACTOR*PERIOD) - 1 : 0]           freq_est_reg;
     
     //------------------------------------------------------------------------------------
-    //      Задание временных ограничений Altera
-    (*altera_attribute = "-name SDC_STATEMENT \"set_false_path -from [get_registers {*freq_estimator:*|est_tick_cnt[*]}] -to [get_registers {*freq_estimator:*|est_tick_sync_reg[0][*]}]\""*)
+    //      Объявление сигналов с учетом требований синтеза и проверки Altera
+    (*altera_attribute = "-name SDC_STATEMENT \"set_false_path -from [get_registers {*freq_estimator:*|est_tick_cnt[*]}] -to [get_registers {*freq_estimator:*|est_tick_sync_reg[0][*]}]\""*) reg [1 : 0][$clog2(FACTOR*PERIOD) - 1 : 0] est_tick_sync_reg;
     
     //------------------------------------------------------------------------------------
     //      Опорный счетчик

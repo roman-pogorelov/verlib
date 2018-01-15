@@ -91,15 +91,14 @@ module clockmon
     
     //------------------------------------------------------------------------------------
     //      Описание сигналов
-    logic [CYCLES - 1 : 0]  mon_reg;        // Регистровые ступени на контролируемом тактовом сигнале
-    logic [CYCLES - 1 : 0]  ref_reg;        // Регистровые ступени на опорном тактовом сигнале
     logic                   pulse_reg;      // Регистр импульсов наличия контролируемого тактового сигнала
     logic [CWIDTH - 1 : 0]  detect_cnt;     // Счетчик обнаружения
     logic                   detect_reg;     // Регистр обнаружения
     
     //------------------------------------------------------------------------------------
-    //      Задание временных ограничений Altera
-    (*altera_attribute = "-name SDC_STATEMENT \"set_false_path -from [get_registers {*clockmon:*|mon_reg*}] -to [get_registers {*clockmon:*|ref_reg*}]\"; -name SDC_STATEMENT \"set_false_path -from [get_registers {*clockmon:*|ref_reg*}] -to [get_registers {*clockmon:*|mon_reg*}]\""*)
+    //      Объявление сигналов с учетом требований синтеза и проверки Altera
+    (*altera_attribute = "-name SDC_STATEMENT \"set_false_path -from [get_registers {*clockmon:*|mon_reg[*]}] -to [get_registers {*clockmon:*|ref_reg[*]}]\""*) reg [CYCLES - 1 : 0] ref_reg;
+    (*altera_attribute = "-name SDC_STATEMENT \"set_false_path -from [get_registers {*clockmon:*|ref_reg[*]}] -to [get_registers {*clockmon:*|mon_reg[*]}]\""*) reg [CYCLES - 1 : 0] mon_reg;
     
     //------------------------------------------------------------------------------------
     //      Регистровые ступени на контролируемом тактовом сигнале
