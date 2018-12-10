@@ -2,8 +2,10 @@ onerror {resume}
 quietly WaveActivateNextPane {} 0
 add wave -noupdate -radix unsigned /sfifo/WIDTH
 add wave -noupdate -radix unsigned /sfifo/DEPTH
+add wave -noupdate -radix unsigned /sfifo/PROGFULL
+add wave -noupdate -radix unsigned /sfifo/PROGEMPTY
 add wave -noupdate -divider <NULL>
-add wave -noupdate /sfifo/reset
+add wave -noupdate /sfifo/rst
 add wave -noupdate /sfifo/clk
 add wave -noupdate -divider <NULL>
 add wave -noupdate /sfifo/clear
@@ -12,10 +14,12 @@ add wave -noupdate -divider <NULL>
 add wave -noupdate -radix hexadecimal /sfifo/wr_data
 add wave -noupdate /sfifo/wr_req
 add wave -noupdate /sfifo/wr_full
+add wave -noupdate /sfifo/wr_progfull
 add wave -noupdate -divider <NULL>
 add wave -noupdate -radix hexadecimal /sfifo/rd_data
-add wave -noupdate /sfifo/rd_ack
+add wave -noupdate /sfifo/rd_req
 add wave -noupdate /sfifo/rd_empty
+add wave -noupdate /sfifo/rd_progempty
 add wave -noupdate -divider <NULL>
 add wave -noupdate -radix hexadecimal /sfifo/buffer
 add wave -noupdate /sfifo/wr_ena
