@@ -5,6 +5,8 @@
     #(
         .WIDTH          (), // Data width (WIDTH > 0)
         .DEPTH          (), // FIFO depth (DEPTH > 1)
+        .PROGFULL       (), // Threshold of programmable full flag (wr_progfull = 1 if used >= PROGFULL)
+        .PROGEMPTY      (), // Threshold of programmable empty flag (rd_progempty = 1 if used < PROGEMPTY)
         .SHOWAHEAD      (), // "Show ahead" mode selection ("ON, "OFF")
         .RAMTYPE        ()  // RAM resource type ("AUTO", "MLAB", "M10K, "LOGIC", ...)
     )
