@@ -20,6 +20,7 @@
         .wr_clk         (), // i
         .wr_data        (), // i  [WIDTH - 1 : 0]
         .wr_req         (), // i
+        .wr_empty       (), // o
         .wr_full        (), // o
         .wr_progfull    (), // o
         .wr_used        (), // o  [$clog2(DEPTH + 1) - 1 : 0]
@@ -29,6 +30,7 @@
         .rd_data        (), // o  [WIDTH - 1 : 0]
         .rd_req         (), // i
         .rd_empty       (), // o
+        .rd_full        (), // o
         .rd_progempty   (), // o
         .rd_used        ()  // o  [$clog2(DEPTH + 1) - 1 : 0]
     ); // the_afifo
@@ -52,6 +54,7 @@ module afifo
     input  logic                                wr_clk,
     input  logic [WIDTH - 1 : 0]                wr_data,
     input  logic                                wr_req,
+    output logic                                wr_empty,
     output logic                                wr_full,
     output logic                                wr_progfull,
     output logic [$clog2(DEPTH + 1) - 1 : 0]    wr_used,
@@ -61,6 +64,7 @@ module afifo
     output logic [WIDTH - 1 : 0]                rd_data,
     input  logic                                rd_req,
     output logic                                rd_empty,
+    output logic                                rd_full,
     output logic                                rd_progempty,
     output logic [$clog2(DEPTH + 1) - 1 : 0]    rd_used
 );
@@ -93,8 +97,10 @@ module afifo
     logic [CWIDTH : 0]      rd_gray_cnt_next;
     logic [CWIDTH : 0]      rd_gray_ptr;
     //
+    logic                   wr_empty_reg;
     logic                   wr_full_reg;
     logic                   rd_empty_reg;
+    logic                   rd_full_reg;
     //
     logic [CWIDTH : 0]      wr_used_reg;
     logic [CWIDTH : 0]      rd_used_reg;
@@ -244,6 +250,16 @@ module afifo
     ); // rd2wr_synchronizer
     
     
+    // Write empty flag register
+    initial wr_empty_reg = '1;
+    always @(posedge wr_rst, posedge wr_clk)
+        if (wr_rst)
+            wr_empty_reg <= '1;
+        else
+            wr_empty_reg <= (wr_gray_cnt_next == wr_gray_ptr);
+    assign wr_empty = wr_empty_reg;
+    
+    
     // Write full flag register
     initial wr_full_reg = '0;
     always @(posedge wr_rst, posedge wr_clk)
@@ -298,6 +314,16 @@ module afifo
         else
             rd_empty_reg <= (rd_gray_cnt_next == rd_gray_ptr);
     assign rd_empty = rd_empty_reg;
+    
+    
+    // Read full flag register
+    initial rd_full_reg = '0;
+    always @(posedge rd_rst, posedge rd_clk)
+        if (rd_rst)
+            rd_full_reg <= '0;
+        else
+            rd_full_reg <= (rd_gray_cnt_next == ({~rd_gray_ptr[CWIDTH : CWIDTH - 1], rd_gray_ptr[CWIDTH - 2 : 0]}));
+    assign rd_full = rd_full_reg;
     
     
     // Programmable read empty flag

@@ -10,6 +10,7 @@ add wave -noupdate -divider <NULL>
 add wave -noupdate /afifo/wr_clk
 add wave -noupdate -radix hexadecimal /afifo/wr_data
 add wave -noupdate /afifo/wr_req
+add wave -noupdate /afifo/wr_empty
 add wave -noupdate /afifo/wr_full
 add wave -noupdate /afifo/wr_progfull
 add wave -noupdate -radix hexadecimal /afifo/wr_used
@@ -18,6 +19,7 @@ add wave -noupdate /afifo/rd_clk
 add wave -noupdate -radix hexadecimal /afifo/rd_data
 add wave -noupdate /afifo/rd_req
 add wave -noupdate /afifo/rd_empty
+add wave -noupdate /afifo/rd_full
 add wave -noupdate /afifo/rd_progempty
 add wave -noupdate -radix hexadecimal /afifo/rd_used
 add wave -noupdate -divider <NULL>
@@ -41,7 +43,7 @@ add wave -noupdate -radix hexadecimal /afifo/rd_gray_ptr
 add wave -noupdate -radix hexadecimal /afifo/wr_full_reg
 add wave -noupdate -radix hexadecimal /afifo/rd_empty_reg
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {265 ns} 0}
+WaveRestoreCursors {{Cursor 1} {61 ns} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 150
 configure wave -valuecolwidth 100
