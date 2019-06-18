@@ -87,6 +87,8 @@ module mmb_arbitrator
     logic [BWIDTH - 1 : 0]                          read_bcnt;
     logic [BWIDTH - 1 : 0]                          read_cnt;
     logic                                           read_complete;
+    logic [DWIDTH - 1 : 0]                          s_rdat_reg;
+    logic [MASTERS - 1 : 0]                         s_rval_reg;
     
     //------------------------------------------------------------------------------------
     //      Сигналы запроса доступа со стороны ведущих
@@ -123,8 +125,16 @@ module mmb_arbitrator
     assign s_busy = ~grant | {MASTERS{m_busy}} | (s_rreq & ~{MASTERS{read_enable}}) | burst_reg;
     
     //------------------------------------------------------------------------------------
+    //      Регистр данных чтения ведомого
+    always @(posedge reset, posedge clk)
+        if (reset)
+            s_rdat_reg <= '0;
+        else
+            s_rdat_reg <= m_rdat;
+    
+    //------------------------------------------------------------------------------------
     //      Разветвление данных чтения от ведомого ко всем ведущим
-    assign s_rdat = {MASTERS{m_rdat}};
+    assign s_rdat = {MASTERS{s_rdat_reg}};
     
     //------------------------------------------------------------------------------------
     //      Коммутация сигналов управления доступом
@@ -254,8 +264,13 @@ module mmb_arbitrator
     endgenerate
     
     //------------------------------------------------------------------------------------
-    //      Коммутация сигналов подтверждения считываемых данных
-    assign s_rval = read_position & {MASTERS{read_valid}} & {MASTERS{m_rval}};
+    //      Регистр подтверждения считываемых данных
+    always @(posedge reset, posedge clk)
+        if (reset)
+            s_rval_reg <= '0;
+        else
+            s_rval_reg <= read_position & {MASTERS{read_valid}} & {MASTERS{m_rval}};
+    assign s_rval = s_rval_reg;
     
     //------------------------------------------------------------------------------------
     //      Счетчик ответов на запросы чтения одного ведущего
