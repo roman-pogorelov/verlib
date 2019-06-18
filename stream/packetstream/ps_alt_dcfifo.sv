@@ -60,7 +60,7 @@ module ps_alt_dcfifo
     
     //------------------------------------------------------------------------------------
     //      Двухклоковое FIFO на ядре от Altera
-    dcfifo
+    (* altera_attribute = {"-name SDC_STATEMENT \"set_false_path -through [get_pins -compatibility_mode {*dcfifo*|dffpipe*:rdaclr|dffe*clrn}] -to [get_registers {*dcfifo*|dffpipe*:rdaclr|dffe*}]\"; -name SDC_STATEMENT \"set_false_path -through [get_pins -compatibility_mode {*dcfifo*|dffpipe*:wraclr|dffe*clrn}] -to [get_registers {*dcfifo*|dffpipe*:wraclr|dffe*}]\""} *) dcfifo
     #(
         .lpm_hint               ({"RAM_BLOCK_TYPE=", RAMTYPE}),
         .lpm_numwords           (DEPTH),
