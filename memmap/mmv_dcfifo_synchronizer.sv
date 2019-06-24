@@ -104,7 +104,7 @@ module mmv_dcfifo_synchronizer
     initial s_rd_disable_reg = '0;
     always @(posedge s_reset, posedge s_clk)
         if (s_reset)
-            s_rd_disable_reg = '0;
+            s_rd_disable_reg <= '0;
         else if (s_rd_disable_reg)
             s_rd_disable_reg <= ~s_rval;
         else
