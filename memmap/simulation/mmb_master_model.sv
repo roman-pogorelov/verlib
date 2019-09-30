@@ -13,7 +13,7 @@
         // Тактирование и сброс
         .reset      (), // i
         .clk        (), // i
-        
+
         // Интерфейс MemoryMapped (ведомый)
         .m_addr     (), // o  [AWIDTH - 1 : 0]
         .m_bcnt     (), // o  [BWIDTH - 1 : 0]
@@ -36,7 +36,7 @@ module mmb_master_model
     // Тактирование и сброс
     input  logic                    reset,
     input  logic                    clk,
-    
+
     // Интерфейс MemoryMapped (ведомый)
     output logic [AWIDTH - 1 : 0]   m_addr,
     output logic [BWIDTH - 1 : 0]   m_bcnt,
@@ -57,7 +57,7 @@ module mmb_master_model
     logic [DWIDTH - 1 : 0]  wrdata        = 0;
     logic                   wrenable      = 0;
     logic [AWIDTH - 1 : 0]  rdReqQueue[$] = {};
-    
+
     //------------------------------------------------------------------------------------
     //      Моделирование процесса случайного доступа
     always @(posedge reset, posedge clk)
@@ -84,7 +84,7 @@ module mmb_master_model
                     end
                 end
             end
-            
+
             if (~request) begin
                 request   = $random;
                 reqtype   = $random;
@@ -94,7 +94,7 @@ module mmb_master_model
                 wrdata    = $random;
             end
         end
-    
+
     //------------------------------------------------------------------------------------
     //      Признак разрешения транзакции записи
     always @(posedge reset, posedge clk)
@@ -104,7 +104,7 @@ module mmb_master_model
             wrenable <= wrenable;
         else
             wrenable <= $random;
-    
+
     //------------------------------------------------------------------------------------
     //      Выходные сигналы интерфейса ведущего
     assign m_addr =  address;
@@ -112,7 +112,7 @@ module mmb_master_model
     assign m_wdat =  wrdata;
     assign m_wreq =  reqtype & request & wrenable;
     assign m_rreq = ~reqtype & request;
-    
+
     //------------------------------------------------------------------------------------
     //      Логирование прохождения запросов транзакций
     always @(posedge clk) begin
@@ -133,7 +133,7 @@ module mmb_master_model
             while (bcnt != 0);
         end
     end
-    
+
     //------------------------------------------------------------------------------------
     //      Логирование и верификация ответов на транзакции чтения
     always @(posedge clk) begin
@@ -144,9 +144,9 @@ module mmb_master_model
                 $display("%8d %m <- RD RESPONSE: address = 0x%x, data = 0x%x", $time, addr, m_rdat);
             end
             else begin
-                $display("%8d %m -> ERROR: ведомый прислал ответ на чтение, которого не запрашивал ведущий", $time, m_addr);
+                $display("%8d %m -> ERROR: unexpected read response has been received by the master", $time);
             end
         end
     end
-    
+
 endmodule: mmb_master_model
