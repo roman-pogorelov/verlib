@@ -77,11 +77,10 @@ module mmv_protector
     output logic                    rval_is_odd
 );
     // Constant declaration
-    localparam int unsigned             BUSYCW   = $clog2(BUSYTIMEOUT);                 // Width of the 'busy' timeout counter
-    localparam int unsigned             RVALCW   = $clog2(RVALTIMEOUT) + 1;             // Width of the 'rval' timeout counter
-    localparam logic [DWIDTH - 1 : 0]   ERRRDVAL = {DWIDTH{1'b1}};                      // Value that will be read if fault occurs during reading
-    localparam logic [RVALCW - 1 : 0]   RVALTIME = RVALTIMEOUT[RVALCW - 1 : 0] + 1'b1;  // The last value of the 'rval' timeout counter
-    localparam                          RAMTYPE  = "AUTO";                              // RAM type of FIFO
+    localparam int unsigned             BUSYCW   = $clog2(BUSYTIMEOUT);     // Width of the 'busy' timeout counter
+    localparam int unsigned             RVALCW   = $clog2(RVALTIMEOUT);     // Width of the 'rval' timeout counter
+    localparam logic [DWIDTH - 1 : 0]   ERRRDVAL = {DWIDTH{1'b1}};          // Value that will be read if fault occurs during reading
+    localparam                          RAMTYPE  = "AUTO";                  // RAM type of FIFO
 
 
     // Signals declaration
@@ -139,6 +138,11 @@ module mmv_protector
     always @(posedge rst, posedge clk) begin
         if (rst)
             timestamp_cnt <= '0;
+        else if (RVALTIMEOUT != 2**RVALCW)
+            if (timestamp_cnt == (RVALTIMEOUT - 1))
+                timestamp_cnt <= '0;
+            else
+                timestamp_cnt <= timestamp_cnt + 1'b1;
         else
             timestamp_cnt <= timestamp_cnt + 1'b1;
     end
@@ -176,7 +180,7 @@ module mmv_protector
 
 
     // Forced 'rval' logic
-    assign forced_rval = ~rreq_fifo_empty & ((rreq_timestamp + RVALTIME) == timestamp_cnt);
+    assign forced_rval = ~rreq_fifo_empty & (rreq_timestamp == timestamp_cnt);
 
 
     // The 'rdat' pipeline register
