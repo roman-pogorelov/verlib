@@ -45,6 +45,8 @@ module mmv_master_model
 );
     //------------------------------------------------------------------------------------
     //      Объявление сигналов
+    logic [AWIDTH - 1 : 0]  address;
+    logic [DWIDTH - 1 : 0]  wrdata;
     logic                   request;
     logic                   reqtype;
     logic [AWIDTH - 1 : 0]  rdReqQueue[$];
@@ -54,15 +56,15 @@ module mmv_master_model
     initial begin
         request = '0;
         reqtype = '0;
-        m_addr  = '0;
-        m_wdat  = '0;
+        address = '0;
+        wrdata  = '0;
     end
     always @(posedge reset, posedge clk)
         if (reset) begin
             request = '0;
             reqtype = '0;
-            m_addr  = '0;
-            m_wdat  = '0;
+            address = '0;
+            wrdata  = '0;
         end
         else begin
             if (request) begin
@@ -73,10 +75,12 @@ module mmv_master_model
             if (~request) begin
                 request = $random;
                 reqtype = $random;
-                m_addr  = $random;
-                m_wdat  = $random;
+                address = $random;
+                wrdata  = $random;
             end
         end
+    assign m_addr =  address;
+    assign m_wdat =  wrdata;
     assign m_wreq =  reqtype & request;
     assign m_rreq = ~reqtype & request;
 
