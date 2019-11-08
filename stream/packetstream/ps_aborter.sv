@@ -1,26 +1,25 @@
 /*
-    //------------------------------------------------------------------------------------
-    //      Модуль принудительного прерывания пакета потокового интерфейса PacketStream
+    // Forced PacketStream interrupter
     ps_aborter
     #(
-        .WIDTH      ()  // Разрядность потока
+        .WIDTH      ()  // Stream width
     )
     the_ps_aborter
     (
-        // Сброс и тактирование
+        // Reset and clock
         .reset      (), // i
         .clk        (), // i
-        
-        // Запрос на принудительное прерывание
+
+        // Abort request
         .abort      (), // i
-        
-        // Входной потоковый интерфейс
+
+        // Inbound stream
         .i_dat      (), // i  [WIDTH - 1 : 0]
         .i_val      (), // i
         .i_eop      (), // i
         .i_rdy      (), // o
-        
-        // Выходной потоковый интерфейс
+
+        // Outbound stream
         .o_dat      (), // o  [WIDTH - 1 : 0]
         .o_val      (), // o
         .o_eop      (), // o
@@ -28,40 +27,40 @@
     ); // the_ps_aborter
 */
 
+
 module ps_aborter
 #(
-    parameter int unsigned          WIDTH = 8   // Разрядность потока
+    parameter int unsigned          WIDTH = 8   // Stream width
 )
 (
-    // Сброс и тактирование
+    // Reset and clock
     input  logic                    reset,
     input  logic                    clk,
-    
-    // Запрос на принудительное прерывание
+
+    // Abort request
     input  logic                    abort,
-    
-    // Входной потоковый интерфейс
+
+    // Inbound stream
     input  logic [WIDTH - 1 : 0]    i_dat,
     input  logic                    i_val,
     input  logic                    i_eop,
     output logic                    i_rdy,
-    
-    // Выходной потоковый интерфейс
+
+    // Outbound stream
     output logic [WIDTH - 1 : 0]    o_dat,
     output logic                    o_val,
     output logic                    o_eop,
     input  logic                    o_rdy
 );
-    //------------------------------------------------------------------------------------
-    //      Объявление сигналов
+    // Signals declaration
     logic [WIDTH - 1 : 0]           buf_dat_reg;
     logic                           buf_eop_reg;
     logic                           buf_state_reg;
     logic                           abort_hold_reg;
     logic                           abort_request;
-    
-    //------------------------------------------------------------------------------------
-    //      Регистр буфера данных
+
+
+    // Data buffer register
     always @(posedge reset, posedge clk)
         if (reset)
             buf_dat_reg <= '0;
@@ -69,9 +68,9 @@ module ps_aborter
             buf_dat_reg <= i_dat;
         else
             buf_dat_reg <= buf_dat_reg;
-    
-    //------------------------------------------------------------------------------------
-    //      Регистр признака конца пакета
+
+
+    // EOP buffer register
     always @(posedge reset, posedge clk)
         if (reset)
             buf_eop_reg <= '0;
@@ -79,40 +78,41 @@ module ps_aborter
             buf_eop_reg <= i_eop;
         else
             buf_eop_reg <= buf_eop_reg;
-    
-    //------------------------------------------------------------------------------------
-    //      Регистр состояния буферов
+
+
+    // The state register
     always @(posedge reset, posedge clk)
         if (reset)
             buf_state_reg <= '0;
-        // Если буфер занят
+        // buffer is busy
         else if (buf_state_reg)
             buf_state_reg <= ~((buf_eop_reg | abort_request) & ~i_val & o_rdy);
-        // Если буфер свободен
+        // buffer is free
         else
             buf_state_reg <= i_val;
-    
-    //------------------------------------------------------------------------------------
-    //      Регистр удержания запроса на прерывание пакета
+
+
+    // Abort request holding register
     always @(posedge reset, posedge clk)
         if (reset)
             abort_hold_reg <= '0;
-        // Если уже удерживается
+        // already is held
         else if (abort_hold_reg)
             abort_hold_reg <= ~(~abort & o_rdy);
-        // Если до этого момента не удерживался
+        // has not held yet
         else
             abort_hold_reg <= abort & buf_state_reg & ~o_rdy;
-    
-    //------------------------------------------------------------------------------------
-    //      Запрос на прерывание пакета с учетом удержания
+
+
+    // Extended abort request
     assign abort_request = abort | abort_hold_reg;
-    
-    //------------------------------------------------------------------------------------
-    //      Логика формирования сигналов потоковых интерфейсов
+
+
+    // Outbound stream logic
     assign i_rdy = o_rdy | ~buf_state_reg;
     assign o_dat = buf_dat_reg;
     assign o_val = buf_state_reg & (i_val | buf_eop_reg | abort_request);
     assign o_eop = buf_state_reg & (buf_eop_reg | abort_request);
-    
+
+
 endmodule // ps_aborter
