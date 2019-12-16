@@ -1,75 +1,74 @@
 /*
-    //------------------------------------------------------------------------------------
-    //      Арбитр доступа нескольких абонентов к одному ресурсу
+    // Single resource arbiter
     arbitrator
     #(
-        .REQS           (), // Количество абонентов (REQS > 1)
-        .SCHEME         ()  // Схема арбитража ("RR" - циклическая, "FP" - фиксированная)
+        .REQS           (), // The number of requesters (REQS > 1)
+        .SCHEME         ()  // Arbitration scheme ("RR" - round-robin, "FP" - fixed priorities)
     )
     the_arbitrator
     (
-        // Сброс и тактирование
+        // Reset and clock
         .reset          (), // i
         .clk            (), // i
-        
-        // Вектор запросов на обслуживание
+
+        // Requests vector
         .req            (), // i  [REQS - 1 : 0]
-        
-        // Готовность обработать запрос
+
+        // Ready to process a request
         .rdy            (), // i
-        
-        // Вектор гранта на обслуживание
+
+        // Grants vector
         .gnt            (), // o  [REQS - 1 : 0]
-        
-        // Номер порта, получившего грант
+
+        // Index of port having the grant
         .num            ()  // o  [$clog2(REQS) - 1 : 0]
     ); // the_arbitrator
 */
 
+
 module arbitrator
 #(
-    parameter int unsigned              REQS    = 4,    // Количество абонентов (REQS > 1)
-    parameter string                    SCHEME  = "FP"  // Схема арбитража ("RR" - циклическая, "FP" - фиксированная)
+    parameter int unsigned              REQS    = 4,    // The number of requesters (REQS > 1)
+    parameter string                    SCHEME  = "FP"  // Arbitration scheme ("RR" - round-robin, "FP" - fixed priorities)
 )
 (
-    // Сброс и тактирование
+    // Reset and clock
     input  logic                        reset,
     input  logic                        clk,
-    
-    // Вектор запросов на обслуживание
+
+    // Requests vector
     input  logic [REQS - 1 : 0]         req,
-    
-    // Готовность обработать запрос
+
+    // Ready to process a request
     input  logic                        rdy,
-    
-    // Вектор гранта на обслуживание
+
+    // Grants vector
     output logic [REQS - 1 : 0]         gnt,
-    
-    // Номер порта, получившего грант
+
+    // Index of port having the grant
     output logic [$clog2(REQS) - 1 : 0] num
 );
-    //------------------------------------------------------------------------------------
-    //      Описание сигналов
-    logic [REQS - 1 : 0]                top_priority;       // Позиция наивысшего приоритета
-    logic [REQS - 1 : 0]                top_priority_reg;   // Регистр позиции наивысшего приоритета
-    logic [2*REQS - 1 : 0]              gnt_double;         // Вектор "сдвоенного" гранта
-    logic [REQS - 1 : 0]                act_gnt;            // "Активный" грант (формируемый исходя из вектора запросов и схемы арбитража)
-    logic [REQS - 1 : 0]                pnd_gnt_reg;        // Регистр гранта, ожидающего обслуживания
-    logic                               pnd_req_reg;        // Регистр признака необработанного запроса
-    
-    //------------------------------------------------------------------------------------
-    //      Выбор схемы арбитража
+    // Signals declaration
+    logic [REQS - 1 : 0]                top_priority;
+    logic [REQS - 1 : 0]                top_priority_reg;
+    logic [2*REQS - 1 : 0]              gnt_double;
+    logic [REQS - 1 : 0]                act_gnt;
+    logic [REQS - 1 : 0]                pnd_gnt_reg;
+    logic                               pnd_req_reg;
+
+
+    // Arbitration scheme selection
     generate
-        // Циклическая схема (round-robin)
+        // Round-robin scheme
         if (SCHEME == "RR")
             assign top_priority = top_priority_reg;
-        // Фиксированная схема (fixed priority)
+        // Fixed priorities
         else
             assign top_priority = {{(REQS - 1){1'b0}}, 1'b1};
     endgenerate
-    
-    //------------------------------------------------------------------------------------
-    //      Регистр позиции наивысшего приоритета
+
+
+    // Top priority register
     always @(posedge reset, posedge clk)
         if (reset)
             top_priority_reg <= {{(REQS - 1){1'b0}}, 1'b1};
@@ -77,17 +76,17 @@ module arbitrator
             top_priority_reg <= {gnt[REQS - 2 : 0], gnt[REQS - 1]};
         else
             top_priority_reg <= top_priority_reg;
-    
-    //------------------------------------------------------------------------------------
-    //      Вектор "сдвоенного" гранта
+
+
+    // Double grant register
     assign gnt_double = {req, req} & ({~req, ~req} + {{REQS{1'b0}}, top_priority});
-    
-    //------------------------------------------------------------------------------------
-    //      "Активный" грант (формируемый исходя из вектора запросов и схемы арбитража)
+
+
+    // Actual grant
     assign act_gnt = gnt_double[2*REQS - 1 : REQS] | gnt_double[REQS - 1 : 0];
-    
-    //------------------------------------------------------------------------------------
-    //      Регистр гранта, ожидающего обслуживания
+
+
+    // Pending grant register
     always @(posedge reset, posedge clk)
         if (reset)
             pnd_gnt_reg <= '0;
@@ -95,9 +94,9 @@ module arbitrator
             pnd_gnt_reg <= act_gnt;
         else
             pnd_gnt_reg <= pnd_gnt_reg;
-    
-    //------------------------------------------------------------------------------------
-    //      Регистр признака необработанного запроса
+
+
+    // Pending request flag register
     always @(posedge reset, posedge clk)
         if (reset)
             pnd_req_reg <= '0;
@@ -105,21 +104,22 @@ module arbitrator
             pnd_req_reg <= ~rdy;
         else
             pnd_req_reg <= |req & ~rdy;
-    
-    //------------------------------------------------------------------------------------
-    //      Вектор гранта на обслуживание
+
+
+    // Grants vector
     assign gnt = pnd_req_reg ? pnd_gnt_reg : act_gnt;
-    
-    //------------------------------------------------------------------------------------
-    //      Преобразователь позиционного кода в двоичный
+
+
+    // One hot to binary converter
     onehot2binary
     #(
-        .WIDTH      (REQS)  // Разрядность входа позиционного кода
+        .WIDTH      (REQS)  // One hot bus width
     )
     gnt2num_conv
     (
         .onehot     (gnt),  // i  [WIDTH - 1 : 0]
         .binary     (num)   // o  [$clog2(WIDTH) - 1 : 0]
     ); // gnt2num_conv
-    
+
+
 endmodule // arbitrator

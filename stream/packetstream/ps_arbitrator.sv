@@ -1,90 +1,91 @@
 /*
-    //------------------------------------------------------------------------------------
-    //      Арбитр потокового интерфейса PacketStream
+    // PacketStream interface arbiter
     ps_arbitrator
     #(
-        .WIDTH          (), // Разрядность потока
-        .SINKS          (), // Количество входных интерфейсов (более 1-го)
-        .SCHEME         ()  // Схема арбитража ("RR" - циклическая "FP" - фиксированная)
+        .WIDTH          (), // Stream width
+        .SINKS          (), // The number of inbound streams
+        .SCHEME         ()  // Arbitration scheme ("RR" - round-robin, "FP" - fixed priorities)
     )
     the_ps_arbitrator
     (
-        // Сброс и тактирование
+        // Reset and clock
         .reset          (), // i
         .clk            (), // i
-        
-        // Входные потоковые интерфейсы
+
+        // Inbound streams
         .i_dat          (), // i  [SINKS - 1 : 0][WIDTH - 1 : 0]
         .i_val          (), // i  [SINKS - 1 : 0]
         .i_eop          (), // i  [SINKS - 1 : 0]
         .i_rdy          (), // o  [SINKS - 1 : 0]
-        
-        // Выходной потоковый интерфейс
+
+        // Outbound stream
         .o_dat          (), // o  [WIDTH - 1 : 0]
         .o_val          (), // o
         .o_eop          (), // o
         .o_rdy          ()  // i
     ); // the_ps_arbitrator
 */
+
+
 module ps_arbitrator
 #(
-    parameter int unsigned                          WIDTH   = 8,    // Разрядность потока
-    parameter int unsigned                          SINKS   = 2,    // Количество входных интерфейсов (более 1-го)
-    parameter string                                SCHEME  = "RR"  // Схема арбитража ("RR" - циклическая, "FP" - фиксированная)
+    parameter int unsigned                          WIDTH   = 8,    // Stream width
+    parameter int unsigned                          SINKS   = 2,    // The number of inbound streams
+    parameter string                                SCHEME  = "RR"  // Arbitration scheme ("RR" - round-robin, "FP" - fixed priorities)
 )
 (
-    // Сброс и тактирование
+    // Reset and clock
     input  logic                                    reset,
     input  logic                                    clk,
-    
-    // Входные потоковые интерфейсы
+
+    // Inbound streams
     input  logic [SINKS - 1 : 0][WIDTH - 1 : 0]     i_dat,
     input  logic [SINKS - 1 : 0]                    i_val,
     input  logic [SINKS - 1 : 0]                    i_eop,
     output logic [SINKS - 1 : 0]                    i_rdy,
-    
-    // Выходной потоковый интерфейс
+
+    // Outbound stream
     output logic [WIDTH - 1 : 0]                    o_dat,
     output logic                                    o_val,
     output logic                                    o_eop,
     input  logic                                    o_rdy
 );
-    //------------------------------------------------------------------------------------
-    //      Объявление сигналов
-    logic [SINKS - 1 : 0]                           active_pos;     // Позиционный код активного мастера от арбитра
-    logic [$clog2(SINKS) - 1 : 0]                   active_num;     // Номер активного мастера от арбитра
-    
-    //------------------------------------------------------------------------------------
-    //      Арбитр доступа нескольких абонентов к одному ресурсу
+    // Signals declaration
+    logic [SINKS - 1 : 0]                           active_pos;
+    logic [$clog2(SINKS) - 1 : 0]                   active_num;
+
+
+    // Single resource arbiter
     arbitrator
     #(
-        .REQS           (SINKS),            // Количество абонентов (REQS > 1)
-        .SCHEME         (SCHEME)            // Схема арбитража ("RR" - циклическая, "FP" - фиксированная)
+        .REQS           (SINKS),            // The number of requesters (REQS > 1)
+        .SCHEME         (SCHEME)            // Arbitration scheme ("RR" - round-robin, "FP" - fixed priorities)
     )
     the_arbitrator
     (
-        // Сброс и тактирование
+        // Reset and clock
         .reset          (reset),            // i
         .clk            (clk),              // i
-        
-        // Вектор запросов на обслуживание
+
+        // Requests vector
         .req            (i_val),            // i  [REQS - 1 : 0]
-        
-        // Готовность обработать запрос
+
+        // Ready to process a request
         .rdy            (o_rdy & o_eop),    // i
-        
-        // Вектор гранта на обслуживание
+
+        // Grants vector
         .gnt            (active_pos),       // o  [REQS - 1 : 0]
-        
-        // Номер порта, получившего грант
+
+        // Index of port having the grant
         .num            (active_num)        // o  [$clog2(REQS) - 1 : 0]
     ); // the_arbitrator
-    
-    //------------------------------------------------------------------------------------
-    //      Мультиплексирование выбранного арбитром канала
+
+
+    // Inbound streams multiplexing
     assign o_dat = i_dat[active_num];
     assign o_val = i_val[active_num];
     assign o_eop = i_eop[active_num];
     assign i_rdy = active_pos & {SINKS{o_rdy}};
-    
+
+
 endmodule // ps_arbitrator

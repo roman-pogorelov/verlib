@@ -1,9 +1,8 @@
 /*
-    //------------------------------------------------------------------------------------
-    //      Преобразователь двоичного кода в позиционный
+    // Binary to one hot converter
     binary2onehot
     #(
-        .BIN_WIDTH  ()  // Разрядность входа двоичного кода
+        .BIN_WIDTH  ()  // Binary bus width
     )
     the_binary2onehot
     (
@@ -12,21 +11,22 @@
     ); // the_binary2onehot
 */
 
+
 module binary2onehot
 #(
-    parameter int unsigned              BIN_WIDTH = 4,              // Разрядность входа двоичного кода
-    parameter int unsigned              OH_WIDTH  = 2**BIN_WIDTH    // Разрядность выхода позиционного кода
+    parameter int unsigned              BIN_WIDTH = 4,              // Binary bus width
+    parameter int unsigned              OH_WIDTH  = 2**BIN_WIDTH    // One hot bus width
 )
 (
     input  logic [BIN_WIDTH - 1 : 0]    binary,
     output logic [OH_WIDTH - 1 : 0]     onehot
 );
 
-    //------------------------------------------------------------------------------------
-    //      Схема кодирования
+    // Encoding
     always_comb begin
         onehot = '0;
         onehot[binary] = '1;
     end
+
 
 endmodule // binary2onehot
