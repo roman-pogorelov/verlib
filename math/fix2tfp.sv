@@ -4,6 +4,7 @@
     #(
         .TFP_WIDTH  (), // Width of trivial float-point data
         .EXP_WIDTH  (), // Width of exponent field in trivial float-point data
+        .SIGNREP    (), // Sign representation ("SIGNED" or "UNSIGNED")
         .PIPELINE   ()  // Latency in clock cycles
     )
     the_fix2tfp
@@ -29,6 +30,7 @@ module fix2tfp
     parameter int unsigned              TFP_WIDTH = 8,                                          // Width of trivial float-point data
     parameter int unsigned              EXP_WIDTH = 3,                                          // Width of exponent field in trivial float-point data
     parameter int unsigned              FIX_WIDTH = TFP_WIDTH - EXP_WIDTH + 2**EXP_WIDTH - 1,   // Width of trivial fixed-point data
+    parameter                           SIGNREP   = "SIGNED",                                   // Sign representation ("SIGNED" or "UNSIGNED")
     parameter int unsigned              PIPELINE  = 4                                           // Latency in clock cycles
 )
 (
@@ -54,6 +56,7 @@ module fix2tfp
     // Signals declaration
     logic [EXP_WIDTH - 1 : 0]               off;
     logic [EXP_WIDTH - 1 : 0]               exp;
+    logic                                   is_highest;
     //
     logic [EXP_WIDTH - 1 : 0]               offset_to_round;
     logic [FIX_WIDTH - 1 : 0]               data_to_round;
@@ -62,12 +65,16 @@ module fix2tfp
     logic [EXP_WIDTH - 1 : 0]               exponent;
 
 
-    // Look for the fist bit which is unequal to sign
+    // Look for the highest significant bit
     always_comb begin
         off = MAX_EXP[EXP_WIDTH - 1 : 0];
         exp = MIN_EXP[EXP_WIDTH - 1 : 0];
         for (int i = 0, int j = 7; i < MAX_EXP; i++, j--) begin
-            if (fix_data[FIX_WIDTH - 1] != fix_data[FIX_WIDTH - 2 - i]) begin
+            if (SIGNREP == "SIGNED")
+                is_highest = fix_data[FIX_WIDTH - 1] != fix_data[FIX_WIDTH - 2 - i];
+            else
+                is_highest = fix_data[FIX_WIDTH - 1 - i];
+            if (is_highest) begin
                 off = i[EXP_WIDTH - 1 : 0];
                 exp = j[EXP_WIDTH - 1 : 0];
                 break;
@@ -137,7 +144,7 @@ module fix2tfp
     #(
         .IWIDTH     (FIX_WIDTH),                // Input data width
         .OWIDTH     (TFP_WIDTH - EXP_WIDTH),    // Output data width
-        .SIGNREP    ("SIGNED"),                 // Sign representation
+        .SIGNREP    (SIGNREP),                  // Sign representation
         .PIPELINE   (RND_PIPELINE)              // Latency in clock cycles
     )
     the_float_rounder

@@ -6,6 +6,7 @@ module fix2tfp2fix_tb ();
     localparam int unsigned TFP_WIDTH = 8;                                          // Width of trivial float-point data
     localparam int unsigned EXP_WIDTH = 3;                                          // Width of exponent field in trivial float-point data
     localparam int unsigned FIX_WIDTH = TFP_WIDTH - EXP_WIDTH + 2**EXP_WIDTH - 1;   // Width of trivial fixed-point data
+    localparam              SIGNREP   = "SIGNED";                                   // Sign representation ("SIGNED" or "UNSIGNED")
     localparam int unsigned PIPELINE  = 0;                                          // Latency in clock cycles
 
 
@@ -40,6 +41,7 @@ module fix2tfp2fix_tb ();
     #(
         .TFP_WIDTH  (TFP_WIDTH),    // Width of trivial float-point data
         .EXP_WIDTH  (EXP_WIDTH),    // Width of exponent field in trivial float-point data
+        .SIGNREP    (SIGNREP),      // Sign representation ("SIGNED" or "UNSIGNED")
         .PIPELINE   (PIPELINE)      // Latency in clock cycles
     )
     the_fix2tfp
@@ -64,6 +66,7 @@ module fix2tfp2fix_tb ();
     #(
         .TFP_WIDTH  (TFP_WIDTH),    // Width of trivial float-point data
         .EXP_WIDTH  (EXP_WIDTH),    // Width of exponent field in trivial float-point data
+        .SIGNREP    (SIGNREP),      // Sign representation ("SIGNED" or "UNSIGNED")
         .PIPELINE   (PIPELINE)      // Latency in clock cycles
     )
     the_tfp2fix

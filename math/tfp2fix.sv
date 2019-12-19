@@ -4,6 +4,7 @@
     #(
         .TFP_WIDTH  (), // Width of trivial float-point data
         .EXP_WIDTH  (), // Width of exponent field in trivial float-point data
+        .SIGNREP    (), // Sign representation ("SIGNED" or "UNSIGNED")
         .PIPELINE   ()  // Latency in clock cycles
     )
     the_tfp2fix
@@ -29,6 +30,7 @@ module tfp2fix
     parameter int unsigned              TFP_WIDTH = 8,                                          // Width of trivial float-point data
     parameter int unsigned              EXP_WIDTH = 3,                                          // Width of exponent field in trivial float-point data
     parameter int unsigned              FIX_WIDTH = TFP_WIDTH - EXP_WIDTH + 2**EXP_WIDTH - 1,   // Width of trivial fixed-point data
+    parameter                           SIGNREP   = "SIGNED",                                   // Sign representation ("SIGNED" or "UNSIGNED")
     parameter int unsigned              PIPELINE  = 1                                           // Latency in clock cycles
 )
 (
@@ -52,7 +54,12 @@ module tfp2fix
 
 
     // Extended mantissa
-    assign emantissa = {{2**EXP_WIDTH{tfp_data[TFP_WIDTH - 1]}}, tfp_data[TFP_WIDTH - 2 : EXP_WIDTH]};
+    generate
+        if (SIGNREP == "SIGNED")
+            assign emantissa = {{2**EXP_WIDTH - 1{tfp_data[TFP_WIDTH - 1]}}, tfp_data[TFP_WIDTH - 1 : EXP_WIDTH]};
+        else
+            assign emantissa = {{2**EXP_WIDTH - 1{1'b0}}, tfp_data[TFP_WIDTH - 1 : EXP_WIDTH]};
+    endgenerate
 
 
     // Exponent field
