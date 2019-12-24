@@ -67,9 +67,11 @@ module fix2tfp
 
     // Look for the highest significant bit
     always_comb begin
+        automatic int i = MIN_EXP;
+        automatic int j = MAX_EXP;
         off = MAX_EXP[EXP_WIDTH - 1 : 0];
         exp = MIN_EXP[EXP_WIDTH - 1 : 0];
-        for (int i = 0, int j = 7; i < MAX_EXP; i++, j--) begin
+        for (i = MIN_EXP; i < MAX_EXP; i++) begin
             if (SIGNREP == "SIGNED")
                 is_highest = fix_data[FIX_WIDTH - 1] != fix_data[FIX_WIDTH - 2 - i];
             else
@@ -79,6 +81,7 @@ module fix2tfp
                 exp = j[EXP_WIDTH - 1 : 0];
                 break;
             end
+            j = j - 1;
         end
     end
 
