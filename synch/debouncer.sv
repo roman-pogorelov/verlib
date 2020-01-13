@@ -1,75 +1,75 @@
 /*
-    //------------------------------------------------------------------------------------
-    //      Модуль устранения дребезга контактов входного асинхронного сигнала
+    // Generator of a clear output from a bouncing input
     debouncer
     #(
-        .STABLE_TIME    (), // Временной промежуток, после которого сигнал признается стабильным
-        .EXTRA_STAGES   (), // Количество дополнительных ступеней цепи синхронизации
-        .RESET_VALUE    ()  // Значение по умолчанию для ступеней цепи синхронизации
+        .STABLE_TIME    (), // The period of time after that an input is considered as stable
+        .EXTRA_STAGES   (), // The number of extra stages
+        .RESET_VALUE    ()  // The sync stages default value
     )
     the_debouncer
     (
-        // Сброс и тактирование
+        // Reset and clock
         .reset          (), // i
         .clk            (), // i
-        
-        // Асинхронный дребезжащий входной сигнал
+
+        // Bouncing input
         .bounce         (), // i
-        
-        // Синхронный стабильный выходной сигнал
+
+        // Clean output
         .stable         ()  // o
     ); // the_debouncer
 */
+
+
 module debouncer
 #(
-    parameter int unsigned      STABLE_TIME  = 8,   // Временной промежуток, после которого сигнал признается стабильным
-    parameter int unsigned      EXTRA_STAGES = 0,   // Количество дополнительных ступеней цепи синхронизации
-    parameter logic             RESET_VALUE  = 0    // Значение по умолчанию для ступеней цепи синхронизации
+    parameter int unsigned      STABLE_TIME  = 8,   // The period of time after that an input is considered as stable
+    parameter int unsigned      EXTRA_STAGES = 0,   // The number of extra stages
+    parameter logic             RESET_VALUE  = 0    // The sync stages default value
 )
 (
-    // Сброс и тактирование
+    // Reset and clock
     input  logic                reset,
     input  logic                clk,
-    
-    // Асинхронный дребезжащий входной сигнал
+
+    // Bouncing input
     input  logic                bounce,
-    
-    // Синхронный стабильный выходной сигнал
+
+    // Clean output
     output logic                stable
 );
-    //------------------------------------------------------------------------------------
-    //      Описание констант
+    // Constants declarations
     localparam int unsigned     CWIDTH = $clog2(STABLE_TIME);
-    
-    //------------------------------------------------------------------------------------
-    //      Объявление сигналов
+
+
+    // Signals declarations
     logic                       bounce_sync;
     logic [CWIDTH - 1 : 0]      stable_cnt;
     logic                       stable_reg;
-    
-    //------------------------------------------------------------------------------------
-    //      Модуль синхронизации сигнала на последовательной триггерной цепочке
+
+
+    // FlipFlop synchronizer
     ff_synchronizer
     #(
-        .WIDTH          (1),            // Разрядность синхронизируемой шины
-        .EXTRA_STAGES   (EXTRA_STAGES), // Количество дополнительных ступеней цепи синхронизации
-        .RESET_VALUE    (RESET_VALUE)   // Значение по умолчанию для ступеней цепи синхронизации
+        .WIDTH          (1),            // Synchronized bus width
+        .EXTRA_STAGES   (EXTRA_STAGES), // The number of extra stages
+        .RESET_VALUE    (RESET_VALUE)   // The sync stages default value
     )
     the_ff_synchronizer
     (
-        // Сброс и тактирование
+        // Reset and clock
         .reset          (reset),        // i
         .clk            (clk),          // i
-        
-        // Асинхронный входной сигнал
+
+        // Asynchronous input
         .async_data     (bounce),       // i  [WIDTH - 1 : 0]
-        
-        // Синхронный выходной сигнал
+
+        // Synchronous output
         .sync_data      (bounce_sync)   // o  [WIDTH - 1 : 0]
     ); // the_ff_synchronizer
-    
-    //------------------------------------------------------------------------------------
-    //      Счетчик временного интервала анализа входного сигнала
+
+
+    // The counter of stabilization time
     always @(posedge reset, posedge clk)
         if (reset)
             stable_cnt <= '0;
@@ -80,9 +80,9 @@ module debouncer
                 stable_cnt <= stable_cnt + 1'b1;
         else
             stable_cnt <= '0;
-    
-    //------------------------------------------------------------------------------------
-    //      Регистр стабильного значения выходного сигнала
+
+
+    // The register of a clean output
     initial stable_reg = RESET_VALUE;
     always @(posedge reset, posedge clk)
         if (reset)
@@ -90,5 +90,6 @@ module debouncer
         else
             stable_reg <= ((bounce_sync != stable_reg) & (stable_cnt == (STABLE_TIME - 1))) ^ stable_reg;
     assign stable = stable_reg;
-    
+
+
 endmodule: debouncer
