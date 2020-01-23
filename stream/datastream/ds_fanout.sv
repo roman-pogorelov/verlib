@@ -1,27 +1,25 @@
 /*
-    //------------------------------------------------------------------------------------
-    //      Модуль разветвления потокового интерфейса DataStream
-    //      (полностью комбинационный)
+    // DataStream interface fanout
     ds_fanout
     #(
-        .WIDTH      (), // Разрядность потока
-        .SOURCES    ()  // Количество выходных интерфейсов
+        .WIDTH      (), // Stream width
+        .SOURCES    ()  // The number of outbound streams
     )
     the_ds_fanout
     (
-        // Сброс и тактирование
-        .reset      (), // i  Не используется
-        .clk        (), // i  Не используется
-        
-        // Управление активными выходами (позиционный код)
+        // Reset and clock
+        .reset      (), // i  Do not use
+        .clk        (), // i  Do not use
+
+        // Active outbound streams selection
         .active     (), // i  [SOURCES - 1 : 0]
-        
-        // Входной потоковый интерфейс
+
+        // Inbound stream
         .i_dat      (), // i  [WIDTH - 1 : 0]
         .i_val      (), // i
         .i_rdy      (), // o
-        
-        // Выходные потоковые интерфейсы
+
+        // Outbound streams
         .o_dat      (), // o  [SOURCES - 1 : 0][WIDTH - 1 : 0]
         .o_val      (), // o  [SOURCES - 1 : 0]
         .o_rdy      ()  // i  [SOURCES - 1 : 0]
@@ -30,29 +28,28 @@
 
 module ds_fanout
 #(
-    parameter int unsigned                          WIDTH   = 8,    // Разрядность потока
-    parameter int unsigned                          SOURCES = 2     // Количество выходных интерфейсов
+    parameter int unsigned                          WIDTH   = 8,    // Stream width
+    parameter int unsigned                          SOURCES = 2     // The number of outbound streams
 )
 (
-    // Сброс и тактирование
-    input  logic                                    reset,          // Не используется
-    input  logic                                    clk,            // Не используется
-    
-    // Управление активными выходами (позиционный код)
+    // Reset and clock
+    input  logic                                    reset,
+    input  logic                                    clk,
+
+    // Active outbound streams selection
     input  logic [SOURCES - 1 : 0]                  active,
-    
-    // Входной потоковый интерфейс
+
+    // Inbound stream
     input  logic [WIDTH - 1 : 0]                    i_dat,
     input  logic                                    i_val,
     output logic                                    i_rdy,
-    
-    // Выходные потоковые интерфейсы
+
+    // Outbound streams
     output logic [SOURCES - 1 : 0][WIDTH - 1 : 0]   o_dat,
     output logic [SOURCES - 1 : 0]                  o_val,
     input  logic [SOURCES - 1 : 0]                  o_rdy
 );
-    //------------------------------------------------------------------------------------
-    //      Генерация сигналов выходных потоковых интерфейсов
+    // General logic
     generate
         genvar i, j;
         logic [SOURCES - 1 : 0][SOURCES - 1 : 0] mask;
@@ -64,9 +61,10 @@ module ds_fanout
             assign o_val[i] = i_val & active[i] & (&(o_rdy | mask[i] | ~active));
         end
     endgenerate
-    
-    //------------------------------------------------------------------------------------
-    //      Формирование сигнала i_rdy
+
+
+    // Inbound readiness logic
     assign i_rdy = &(o_rdy | ~active);
-    
+
+
 endmodule // ds_fanout

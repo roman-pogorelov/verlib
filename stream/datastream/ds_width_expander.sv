@@ -1,23 +1,22 @@
 /*
-    //------------------------------------------------------------------------------------
-    //      Модуль "расширения" разрядности потокового интерфейса DataStream
+    // DataStream upsizing width converter
     ds_width_expander
     #(
-        .IWIDTH     (), // Разрядность входного потокового интерфейса
-        .FACTOR     ()  // Коэффициент расширения разрядности (FACTOR > 1)
+        .IWIDTH     (), // Inbound stream width
+        .FACTOR     ()  // Outbound to inbound stream width ration (FACTOR > 1)
     )
     the_ds_width_expander
     (
-        // Асинхронный сброс и тактирование
+        // Reset and clock
         .reset      (), // i
         .clk        (), // i
-        
-        // Входной потоковый интерфейс
+
+        // Inbound stream
         .i_dat      (), // i  [IWIDTH - 1 : 0]
         .i_val      (), // i
         .i_rdy      (), // o
-        
-        // Выходной потоковый интерфейс
+
+        // Outbound stream
         .o_dat      (), // o  [IWIDTH*FACTOR - 1 : 0]
         .o_val      (), // o
         .o_rdy      ()  // i
@@ -26,32 +25,31 @@
 
 module ds_width_expander
 #(
-    parameter int unsigned                  IWIDTH = 8,     // Разрядность входного потокового интерфейса
-    parameter int unsigned                  FACTOR = 2      // Коэффициент расширения разрядности (FACTOR > 1)
+    parameter int unsigned                  IWIDTH = 8,     // Inbound stream width
+    parameter int unsigned                  FACTOR = 2      // Outbound to inbound stream width ration (FACTOR > 1)
 )
 (
-    // Асинхронный сброс и тактирование
+    // Reset and clock
     input  logic                            reset,
     input  logic                            clk,
-    
-    // Входной потоковый интерфейс
+
+    // Inbound stream
     input  logic [IWIDTH - 1 : 0]           i_dat,
     input  logic                            i_val,
     output logic                            i_rdy,
-    
-    // Выходной потоковый интерфейс
+
+    // Outbound stream
     output logic [IWIDTH*FACTOR - 1 : 0]    o_dat,
     output logic                            o_val,
     input  logic                            o_rdy
 );
-    //------------------------------------------------------------------------------------
-    //      Описание сигналов
-    logic [$clog2(FACTOR) - 1 : 0]          i_word_cnt;     // Счетчик слов входного потокового интерфейса
-    logic                                   accum_done_reg; // Регистр признака окончания накопления
-    logic [IWIDTH*(FACTOR - 1) - 1 : 0]     accum_data_reg; // Регистр накопления данных
-    
-    //------------------------------------------------------------------------------------
-    //      Счетчик слов входного потокового интерфейса
+    // Signals declaration
+    logic [$clog2(FACTOR) - 1 : 0]          i_word_cnt;
+    logic                                   accum_done_reg;
+    logic [IWIDTH*(FACTOR - 1) - 1 : 0]     accum_data_reg;
+
+
+    // Inbound words counter
     initial i_word_cnt = '0;
     always @(posedge reset, posedge clk)
         if (reset)
@@ -63,9 +61,9 @@ module ds_width_expander
                 i_word_cnt <= i_word_cnt + 1'b1;
         else
             i_word_cnt <= i_word_cnt;
-    
-    //------------------------------------------------------------------------------------
-    //      Регистр признака окончания накопления
+
+
+    // Ending accumulation register
     initial accum_done_reg = '0;
     always @(posedge reset, posedge clk)
         if (reset)
@@ -74,9 +72,9 @@ module ds_width_expander
             accum_done_reg <= (i_word_cnt == FACTOR - 2);
         else
             accum_done_reg <= accum_done_reg;
-    
-    //------------------------------------------------------------------------------------
-    //      Регистр данных
+
+
+    // Data register
     initial accum_data_reg = '0;
     always @(posedge reset, posedge clk)
         if (reset)
@@ -88,11 +86,12 @@ module ds_width_expander
                 accum_data_reg <= i_dat;
         else
             accum_data_reg <= accum_data_reg;
-    
-    //------------------------------------------------------------------------------------
-    //      Формирование сигналов потоковых интерфейсов
+
+
+    // Output signals logic
     assign i_rdy = o_rdy | ~accum_done_reg;
     assign o_dat = {i_dat, accum_data_reg};
     assign o_val = i_val & accum_done_reg;
-    
+
+
 endmodule // ds_width_expander
