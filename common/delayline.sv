@@ -1,69 +1,83 @@
 /*
-    //------------------------------------------------------------------------------------
-    //      Линия задержки на регистрах
+    // Delay line
     delayline
     #(
-        .WIDTH              (), // Разрядность линии задержки   (WIDTH   >  0)
-        .LATENCY            ()  // Величина задержки            (LATENCY >= 0)
+        .WIDTH              (), // Data width (WIDTH > 0)
+        .LATENCY            ()  // Latency value (LATENCY >= 0)
     )
     the_delayline
     (
-        // Сброс и тактирование
+        // Reset and clock
         .reset              (), // i
         .clk                (), // i
-        
-        // Разрешение тактирования
+
+        // Clock enable
         .clkena             (), // i
-        
-        // Входная шина
+
+        // Input bus
         .data               (), // i  [WIDTH - 1 : 0]
-        
-        // Выходная шина
+
+        // Output bus
         .q                  ()  // o  [WIDTH - 1 : 0]
     ); // the_delayline
 */
 
+
 module delayline
 #(
-    parameter                       WIDTH   = 19,   // Разрядность линии задержки   (WIDTH   >  0)
-    parameter                       LATENCY = 2     // Величина задержки            (LATENCY >= 0)
+    parameter int unsigned          WIDTH   = 19,   // Data width (WIDTH > 0)
+    parameter int unsigned          LATENCY = 2     // Latency value (LATENCY >= 0)
 )
 (
-    // Сброс и тактирование
+    // Reset and clock
     input  logic                    reset,
     input  logic                    clk,
-    
-    // Разрешение тактирования
+
+    // Clock enable
     input  logic                    clkena,
-    
-    // Входная шина
+
+    // Input bus
     input  logic [WIDTH - 1 : 0]    data,
-    
-    // Выходная шина
+
+    // Output bus
     output logic [WIDTH - 1 : 0]    q
 );
-    //------------------------------------------------------------------------------------
-    //      Генерация структуры модуля в зависимости от значения LATENCY
+    // Select implementation depending on a latency value
     generate
-        // Ненулевая задержка
-        if (LATENCY) begin
-            logic [LATENCY*WIDTH - 1 : 0] delay_reg;
-            always @(posedge reset, posedge clk)
+
+        // A latency is more than 1
+        if (LATENCY > 1) begin
+            logic [LATENCY - 1 : 0][WIDTH - 1 : 0] delay_reg;
+            always @(posedge reset, posedge clk) begin
                 if (reset)
                     delay_reg <= '0;
                 else if (clkena)
-                    if (LATENCY == 1)
-                        delay_reg <= data;
-                    else
-                        delay_reg <= {delay_reg[(LATENCY - 1)*WIDTH -1 : 0], data};
+                    delay_reg <= {delay_reg[LATENCY - 2 : 0], data};
                 else
                     delay_reg <= delay_reg;
-            assign q = delay_reg[LATENCY*WIDTH - 1 : (LATENCY - 1)*WIDTH];
+            end
+            assign q = delay_reg[LATENCY - 1];
         end
-        // Нулевая задержка
+
+        // A latency is equal to 1
+        else if (LATENCY == 1) begin
+            logic [WIDTH - 1 : 0] delay_reg;
+            always @(posedge reset, posedge clk) begin
+                if (reset)
+                    delay_reg <= '0;
+                else if (clkena)
+                    delay_reg <= data;
+                else
+                    delay_reg <= delay_reg;
+            end
+            assign q = delay_reg;
+        end
+
+        // A latency is equal to 0
         else begin
             assign q = data;
         end
+
     endgenerate
 
 endmodule // delayline
