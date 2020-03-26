@@ -69,33 +69,32 @@ module ps_remover
     logic                           keep_rdy;
 
 
-    //------------------------------------------------------------------------------------
-    //      Модуль захвата и удержания параметров пакета на все время его прохождения
+    // PacketStream parameter keeper
     ps_param_keeper
     #(
-        .DWIDTH         (WIDTH),    // Разрядность потока
-        .PWIDTH         (1)         // Разрядность интерфейса параметров
+        .DWIDTH         (WIDTH),    // Stream width
+        .PWIDTH         (1)         // Parameters bus width
     )
     remove_request_keeper
     (
-        // Сброс и тактирование
+        // Reset and clock
         .reset          (reset),    // i
         .clk            (clk),      // i
 
-        // Входной интерфейс управления параметрами пакета
+        // Input packet's parameters bus
         .desired_param  (remove),   // i  [PWIDTH - 1 : 0]
 
-        // Выходной интерфейс управления параметрами пакета
-        // (с фиксацией на время прохождения всего пакета)
+        // Output packet's parameters bus
+        // (it is held during the whole packet)
         .agreed_param   (removing), // o  [PWIDTH - 1 : 0]
 
-        // Входной потоковый интерфейс
+        // Inbound stream
         .i_dat          (i_dat),    // i  [DWIDTH - 1 : 0]
         .i_val          (i_val),    // i
         .i_eop          (i_eop),    // i
         .i_rdy          (i_rdy),    // o
 
-        // Выходной потоковый интерфейс
+        // Outbound stream
         .o_dat          (keep_dat), // o  [DWIDTH - 1 : 0]
         .o_val          (keep_val), // o
         .o_eop          (keep_eop), // o

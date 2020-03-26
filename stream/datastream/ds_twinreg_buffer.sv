@@ -1,57 +1,56 @@
 /*
-    //------------------------------------------------------------------------------------
-    //      Буфер потокового интерфейса DataStream на двух регистрах, лишенный
-    //      комбинационных связей между входами и выходами
+    // Register based DataStream buffer with no combinational links
+    // between stream interfaces
     ds_twinreg_buffer
     #(
-        .WIDTH      ()  // Разрядность потокового интерфейса
+        .WIDTH      ()  // Stream width
     )
     the_ds_twinreg_buffer
     (
-        // Сброс и тактирование
+        // Reset and clock
         .reset      (), // i
         .clk        (), // i
-        
-        // Входной потоковый интерфейс
+
+        // Inbound stream
         .i_dat      (), // i  [WIDTH - 1 : 0]
         .i_val      (), // i
         .i_rdy      (), // o
-        
-        // Выходной потоковый интерфейс
+
+        // Outbound stream
         .o_dat      (), // o  [WIDTH - 1 : 0]
         .o_val      (), // o
         .o_rdy      ()  // i
     ); // the_ds_twinreg_buffer
 */
 
+
 module ds_twinreg_buffer
 #(
-    parameter int unsigned          WIDTH = 8   // Разрядность потокового интерфейса
+    parameter int unsigned          WIDTH = 8   // Stream width
 )
 (
-    // Сброс и тактирование
+    // Reset and clock
     input  logic                    reset,
     input  logic                    clk,
-    
-    // Входной потоковый интерфейс
+
+    // Inbound stream
     input  logic [WIDTH - 1 : 0]    i_dat,
     input  logic                    i_val,
     output logic                    i_rdy,
-    
-    // Выходной потоковый интерфейс
+
+    // Outbound stream
     output logic [WIDTH - 1 : 0]    o_dat,
     output logic                    o_val,
     input  logic                    o_rdy
 );
-    //------------------------------------------------------------------------------------
-    //      Описание сигналов
-    logic [WIDTH - 1 : 0]           i_dat_reg;      // Регистр данных входной ступени
-    logic [WIDTH - 1 : 0]           o_dat_reg;      // Регистр данных выходной ступени
-    logic                           i_val_reg;      // Регистр признака достоверности входной ступени
-    logic                           o_val_reg;      // Регистр признака достоверности выходной ступени
-    
-    //------------------------------------------------------------------------------------
-    //      Регистр данных входной ступени
+    // Signals declaration
+    logic [WIDTH - 1 : 0]           i_dat_reg;
+    logic [WIDTH - 1 : 0]           o_dat_reg;
+    logic                           i_val_reg;
+    logic                           o_val_reg;
+
+
+    // The data register of the input stage
     initial i_dat_reg = '0;
     always @(posedge reset, posedge clk)
         if (reset)
@@ -60,9 +59,9 @@ module ds_twinreg_buffer
             i_dat_reg <= i_dat;
         else
             i_dat_reg <= i_dat_reg;
-    
-    //------------------------------------------------------------------------------------
-    //      Регистр данных выходной ступени
+
+
+    // The data register of the output stage
     initial o_dat_reg = '0;
     always @(posedge reset, posedge clk)
         if (reset)
@@ -71,9 +70,9 @@ module ds_twinreg_buffer
             o_dat_reg <= i_val_reg ? i_dat_reg : i_dat;
         else
             o_dat_reg <= o_dat_reg;
-    
-    //------------------------------------------------------------------------------------
-    //      Регистр признака достоверности входной ступени
+
+
+    // The validness register of the input stage
     initial i_val_reg = '0;
     always @(posedge reset, posedge clk)
         if (reset)
@@ -82,9 +81,9 @@ module ds_twinreg_buffer
             i_val_reg <= ~(~o_val_reg | o_rdy) & i_val;
         else
             i_val_reg <= i_val_reg;
-    
-    //------------------------------------------------------------------------------------
-    //      Регистр признака достоверности выходной ступени
+
+
+    // The validation register of the output stage
     initial o_val_reg = '0;
     always @(posedge reset, posedge clk)
         if (reset)
@@ -93,11 +92,12 @@ module ds_twinreg_buffer
             o_val_reg <= i_val_reg | i_val;
         else
             o_val_reg <= o_val_reg;
-    
-    //------------------------------------------------------------------------------------
-    //      Формирование выходных сигналов потоковых интерфейсов
+
+
+    // Output signals logic
     assign o_dat =  o_dat_reg;
     assign o_val =  o_val_reg;
     assign i_rdy = ~i_val_reg;
-    
+
+
 endmodule // ds_twinreg_buffer

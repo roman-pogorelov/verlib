@@ -1,59 +1,57 @@
 /*
-    //------------------------------------------------------------------------------------
-    //      Одноклоковый FIFO буфер для потокового интерфейса DataStream
-    //      на ядре от Altera
+    // Single clock DataStream buffer based on standard Altera IP
     ds_alt_scfifo
     #(
-        .DWIDTH             (), // Разрядность потока
-        .DEPTH              (), // Глубина FIFO
-        .RAMTYPE            ()  // Тип блоков встроенной памяти ("MLAB", "M20K", ...)
+        .DWIDTH             (), // Stream width
+        .DEPTH              (), // Buffer (FIFO) depth
+        .RAMTYPE            ()  // RAM blocks type ("MLAB", "M20K", ...)
     )
     the_ds_alt_scfifo
     (
-        // Сброс и тактирование
+        // Reset and clock
         .reset              (), // i
         .clk                (), // i
-        
-        // Входной потоковый интерфейс
+
+        // Inbound stream
         .i_dat              (), // i  [DWIDTH - 1 : 0]
         .i_val              (), // i
         .i_rdy              (), // o
-        
-        // Выходной потоковый интерфейс
+
+        // Inbound stream
         .o_dat              (), // o  [DWIDTH - 1 : 0]
         .o_val              (), // o
         .o_rdy              ()  // i
     ); // the_ds_alt_scfifo
 */
 
+
 module ds_alt_scfifo
 #(
-    parameter                       DWIDTH  = 8,        // Разрядность потока
-    parameter                       DEPTH   = 8,        // Глубина FIFO
-    parameter                       RAMTYPE = "AUTO"    // Тип блоков встроенной памяти ("MLAB", "M20K", ...)
+    parameter                       DWIDTH  = 8,        // Stream width
+    parameter                       DEPTH   = 8,        // Buffer (FIFO) depth
+    parameter                       RAMTYPE = "AUTO"    // RAM blocks type ("MLAB", "M20K", ...)
 )
 (
-    // Сброс и тактирование
+    // Reset and clock
     input  logic                    reset,
     input  logic                    clk,
-    
-    // Входной потоковый интерфейс
+
+    // Inbound stream
     input  logic [DWIDTH - 1 : 0]   i_dat,
     input  logic                    i_val,
     output logic                    i_rdy,
-    
-    // Выходной потоковый интерфейс
+
+    // Outbound stream
     output logic [DWIDTH - 1 : 0]   o_dat,
     output logic                    o_val,
     input  logic                    o_rdy
 );
-    //------------------------------------------------------------------------------------
-    //      Описание сигналов
-    logic                           fifo_empty;
-    logic                           fifo_full;
-    
-    //------------------------------------------------------------------------------------
-    //      Одноклоковое FIFO на ядре от Altera
+    // Signal declaration
+    logic   fifo_empty;
+    logic   fifo_full;
+
+
+    // Altera's single clock FIFO IP core
     scfifo
     #(
         .add_ram_output_register    ("OFF"),
@@ -82,10 +80,11 @@ module ds_alt_scfifo
         .sclr                       ( ),
         .usedw                      ( )
     ); // the_scfifo
-    
-    //------------------------------------------------------------------------------------
-    //      Формирование сигналов i_rdy и o_val
+
+
+    // Handshake signals logic
     assign i_rdy = ~fifo_full;
     assign o_val = ~fifo_empty;
-    
+
+
 endmodule // ds_alt_scfifo

@@ -1,23 +1,23 @@
 /*
-    //------------------------------------------------------------------------------------
-    //      Модуль оценки произвольной частоты тактирования по известной опорной
+    // Clock frequency estimator
     freq_estimator
     #(
-        .PERIOD         (), // Период замеров в тактах refclk (PERIOD > 0)
-        .FACTOR         ()  // Максимально возможное отношение estclk/refclk
+        .PERIOD         (), // Duration of estimation in refclk cycles (PERIOD > 0)
+        .FACTOR         ()  // The maximum estclk to refclk ration
     )
     the_freq_estimator
     (
-        // Опорное тактирование
+        // Reference clock
         .refclk         (), // i
-        
-        // Оцениваемое тактирование
+
+        // Estimable clock
         .estclk         (), // i
-        
-        // Оценка частоты тактирования estclk
+
+        // Estimated clock frequency
         .frequency      ()  // o  [$clog2(FACTOR*PERIOD) - 1 : 0]
     ); // the_freq_estimator
 */
+
 
 module freq_estimator
 #(
@@ -25,70 +25,69 @@ module freq_estimator
     parameter int unsigned                          FACTOR = 2      // Максимально возможное отношение estclk/refclk
 )
 (
-    // Опорное тактирование
+    // Reference clock
     input  logic                                    refclk,
-    
-    // Оцениваемое тактирование
+
+    // Estimable clock
     input  logic                                    estclk,
-    
-    // Оценка частоты тактирования estclk
+
+    // Estimated clock frequency
     output logic [$clog2(FACTOR*PERIOD) - 1 : 0]    frequency
 );
-    //------------------------------------------------------------------------------------
-    //      Описание сигналов
+    // Signals declaration
     logic [$clog2(PERIOD) - 1 : 0]                  ref_tick_cnt;
     logic                                           ref_stb_reg;
     logic [$clog2(FACTOR*PERIOD) - 1 : 0]           est_tick_cnt;
     logic [$clog2(FACTOR*PERIOD) - 1 : 0]           est_tick_curr;
     logic [$clog2(FACTOR*PERIOD) - 1 : 0]           est_tick_prev_reg;
     logic [$clog2(FACTOR*PERIOD) - 1 : 0]           freq_est_reg;
-    
-    //------------------------------------------------------------------------------------
-    //      Объявление сигналов с учетом требований синтеза и проверки Altera
+
+
+    // Declaration of signals with some Altera's constraints
     (*altera_attribute = "-name SDC_STATEMENT \"set_false_path -from [get_registers {*freq_estimator:*|est_tick_cnt[*]}] -to [get_registers {*freq_estimator:*|est_tick_sync_reg[0][*]}]\""*) reg [1 : 0][$clog2(FACTOR*PERIOD) - 1 : 0] est_tick_sync_reg;
-    
-    //------------------------------------------------------------------------------------
-    //      Опорный счетчик
+
+
+    // Reference counter
     initial ref_tick_cnt = '0;
     always @(posedge refclk)
         if (ref_tick_cnt == PERIOD - 1)
             ref_tick_cnt <= '0;
         else
             ref_tick_cnt <= ref_tick_cnt + 1'b1;
-    
-    //------------------------------------------------------------------------------------
-    //      Регистр строба опорного счетчика
+
+
+    // The register of reference strobe
     initial ref_stb_reg = '0;
     always @(posedge refclk)
         ref_stb_reg <= (ref_tick_cnt == PERIOD - 1);
-    
-    //------------------------------------------------------------------------------------
-    //      Счетчик оценивания
+
+
+    // Estimable counter
     initial est_tick_cnt = '0;
     always @(posedge estclk)
         est_tick_cnt <= est_tick_cnt + 1'b1;
-    
-    //------------------------------------------------------------------------------------
-    //      Цепочка регистров ре-синхронизации счетчика оценивания
+
+
+    // Synchronization chain
     initial est_tick_sync_reg = '0;
     always @(posedge refclk)
         est_tick_sync_reg <= {est_tick_sync_reg[0], est_tick_cnt};
-    
-    //------------------------------------------------------------------------------------
-    //      Текущее значение счетчика оценивания
+
+
+    // Current value of estimable counter
     assign est_tick_curr = est_tick_sync_reg[1];
-    
-    //------------------------------------------------------------------------------------
-    //      Регистр предыдущего значения счетчика оценивания
+
+
+    // The register of previous value of estimable counter
     initial est_tick_prev_reg = '0;
     always @(posedge refclk)
         if (ref_stb_reg)
             est_tick_prev_reg <= est_tick_curr;
         else
             est_tick_prev_reg <= est_tick_prev_reg;
-    
-    //------------------------------------------------------------------------------------
-    //      Регистр оценивания частоты тактирования
+
+
+    // The register of estimated clock frequency
     initial freq_est_reg = '0;
     always @(posedge refclk)
         if (ref_stb_reg)
@@ -96,5 +95,5 @@ module freq_estimator
         else
             freq_est_reg <= freq_est_reg;
     assign frequency = freq_est_reg;
-    
+
 endmodule: freq_estimator

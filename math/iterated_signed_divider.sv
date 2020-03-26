@@ -1,67 +1,66 @@
 /*
-    //------------------------------------------------------------------------------------
-    //      Модуль итерационного деления знаковых целых чисел в дополнительном коде
+    // Iterated signed integer divider
     iterated_signed_divider
     #(
-        .NWIDTH         (), // Разрядность числителя
-        .DWIDTH         ()  // Разрядность знаменателя
+        .NWIDTH         (), // Numerator width
+        .DWIDTH         ()  // Denominator width
     )
     the_iterated_signed_divider
     (
-        // Сброс и тактирование
+        // Reset and clock
         .reset          (), // i
         .clk            (), // i
-        
-        // Интерфейс управления
+
+        // Control interface
         .start          (), // i
         .ready          (), // o
         .done           (), // o
-        
-        // Интерфейс входных данных
+
+        // Input data interface
         .numerator      (), // i  [NWIDTH - 1 : 0]
         .denominator    (), // i  [DWIDTH - 1 : 0]
-        
-        // Интерфейс выходных данных
+
+        // Output data interface
         .quotient       (), // o  [NWIDTH - 1 : 0]
         .remainder      ()  // o  [DWIDTH - 1 : 0]
     ); // the_iterated_signed_divider
 */
 
+
 module iterated_signed_divider
 #(
-    parameter int unsigned          NWIDTH = 8, // Разрядность числителя
-    parameter int unsigned          DWIDTH = 6  // Разрядность знаменателя
+    parameter int unsigned          NWIDTH = 8, // Numerator width
+    parameter int unsigned          DWIDTH = 6  // Denominator width
 )
 (
-    // Сброс и тактирование
+    // Reset and clock
     input  logic                    reset,
     input  logic                    clk,
-    
-    // Интерфейс управления
+
+    // Control interface
     input  logic                    start,
     output logic                    ready,
     output logic                    done,
-    
-    // Интерфейс входных данных
+
+    // Input data interface
     input  logic [NWIDTH - 1 : 0]   numerator,
     input  logic [DWIDTH - 1 : 0]   denominator,
-    
-    // Интерфейс выходных данных
+
+    // Output data interface
     output logic [NWIDTH - 1 : 0]   quotient,
     output logic [DWIDTH - 1 : 0]   remainder
 );
-    //------------------------------------------------------------------------------------
-    //      Описание сигналов
-    logic                           correction;         // Признак выполнения коррекции результата
-    logic                           done_reg;           // Регистр импульса готовности результата
-    logic [$clog2(NWIDTH) - 1 : 0]  work_cnt;           // Счетчик итераций рабочего цикла
-    logic [DWIDTH - 1 : 0]          denominator_reg;    // Регистр делителя
-    logic [DWIDTH - 1 : 0]          new_remainder;      // Новое значение частного остатка
-    logic [DWIDTH - 1 : 0]          remainder_reg;      // Регистр частного остатка
-    logic [NWIDTH - 1 : 0]          quotient_reg;       // Регистр накопления частного
-    
-    //------------------------------------------------------------------------------------
-    //      Состояния FSM
+    // Signals declaration
+    logic                           correction;
+    logic                           done_reg;
+    logic [$clog2(NWIDTH) - 1 : 0]  work_cnt;
+    logic [DWIDTH - 1 : 0]          denominator_reg;
+    logic [DWIDTH - 1 : 0]          new_remainder;
+    logic [DWIDTH - 1 : 0]          remainder_reg;
+    logic [NWIDTH - 1 : 0]          quotient_reg;
+
+
+    // FSM encoding
     enum logic [1 : 0] {
         st_idleness     = 2'b00,
         st_working      = 2'b01,
@@ -69,9 +68,9 @@ module iterated_signed_divider
     } state;
     wire [1 : 0] st;
     assign st = state;
-    
-    //------------------------------------------------------------------------------------
-    //      Логика переходов FSM
+
+
+    // FSM transition logic
     always @(posedge reset, posedge clk)
         if (reset)
             state <= st_idleness;
@@ -81,36 +80,36 @@ module iterated_signed_divider
                     state <= st_working;
                 else
                     state <= st_idleness;
-            
+
             st_working:
                 if (work_cnt == (NWIDTH - 1))
                     state <= st_correction;
                 else
                     state <= st_working;
-            
+
             st_correction:
                 state <= st_idleness;
-            
+
             default:
                 state <= st_idleness;
         endcase
-    
-    //------------------------------------------------------------------------------------
-    //      Управляющие сигналы FSM
+
+
+    // FSM driven signals
     assign ready = ~st[0];
     assign correction = st[1];
-    
-    //------------------------------------------------------------------------------------
-    //      Регистр импульса готовности результата
+
+
+    // Done register
     always @(posedge reset, posedge clk)
         if (reset)
             done_reg <= '0;
         else
             done_reg <= correction;
     assign done = done_reg;
-    
-    //------------------------------------------------------------------------------------
-    //      Счетчик итераций рабочего цикла
+
+
+    // Division cycles counter
     always @(posedge reset, posedge clk)
         if (reset)
             work_cnt <= '0;
@@ -118,9 +117,9 @@ module iterated_signed_divider
             work_cnt <= '0;
         else
             work_cnt <= work_cnt + 1'b1;
-    
-    //------------------------------------------------------------------------------------
-    //      Регистр делителя
+
+
+    // Denominator register
     always @(posedge reset, posedge clk)
         if (reset)
             denominator_reg <= '0;
@@ -128,33 +127,33 @@ module iterated_signed_divider
             denominator_reg <= denominator;
         else
             denominator_reg <= denominator_reg;
-    
-    //------------------------------------------------------------------------------------
-    //      Новое значение частного остатка
+
+
+    // Remainder logic
     always_comb begin
-        // Коррекция остатка
+        // Correction
         if (correction)
-            // Остаток отрицательный
+            // Remainder is negative
             if (remainder_reg[DWIDTH - 1])
-                // Делитель отрицательный
+                // Denominator is negative
                 if (denominator_reg[DWIDTH - 1])
                     new_remainder = remainder_reg - denominator_reg;
-                // Делитель положительный
+                // Denominator is positive
                 else
                     new_remainder = remainder_reg + denominator_reg;
-            // Остаток положительный
+            // Remainder is positive
             else
                 new_remainder = remainder_reg;
-        // Знаки частного остатка и делителя разные
+        // Remainder and denominator have different signs
         else if (remainder_reg[DWIDTH - 1] ^ denominator_reg[DWIDTH - 1])
             new_remainder = {remainder_reg[DWIDTH - 2 : 0], quotient_reg[NWIDTH - 1]} + denominator_reg;
-        // Знаки частного остатка и делителя совпадают
+        // Remainder and denominator have equal signs
         else
             new_remainder = {remainder_reg[DWIDTH - 2 : 0], quotient_reg[NWIDTH - 1]} - denominator_reg;
     end
-    
-    //------------------------------------------------------------------------------------
-    //      Регистр частного остатка
+
+
+    // Remainder register
     always @(posedge reset, posedge clk)
         if (reset)
             remainder_reg <= '0;
@@ -166,9 +165,9 @@ module iterated_signed_divider
         else
             remainder_reg <= new_remainder;
     assign remainder = remainder_reg;
-    
-    //------------------------------------------------------------------------------------
-    //      Регистр накопления частного
+
+
+    // Quotient accumulation register
     always @(posedge reset, posedge clk)
         if (reset)
             quotient_reg <= '0;
@@ -182,5 +181,6 @@ module iterated_signed_divider
         else
             quotient_reg <= {quotient_reg[NWIDTH - 2 : 0], ~(new_remainder[DWIDTH - 1] ^ denominator_reg[DWIDTH - 1])};
     assign quotient = quotient_reg;
-    
+
+
 endmodule: iterated_signed_divider

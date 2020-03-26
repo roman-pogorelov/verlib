@@ -1,53 +1,53 @@
 /*
-    //------------------------------------------------------------------------------------
-    //      Генератор одиночного импульса заданной длительности после подачи питания
+    // Start-up pulse generator
     initialpulse
     #(
-        .LEN    (), // Длительность импульса
-        .POL    ()  // Активный уровень импульса
+        .LEN    (), // Pulse length
+        .POL    ()  // Active level
     )
     the_initialpulse
     (
-        // Тактирование
+        // Clock
         .clk    (), // i
-        
-        // Импульс, генерируемый при старте
+
+        // Start-up pulse
         .pulse  ()  // o
     ); // the_initialpulse
 */
 
+
 module initialpulse
 #(
-    parameter int unsigned  LEN = 10,   // Длительность импульса (от первого фронта clk)
-    parameter logic         POL = 1'b1  // Активный уровень импульса
+    parameter int unsigned  LEN = 10,   // Pulse length
+    parameter logic         POL = 1'b1  // Active level
 )
 (
-    // Тактирование
+    // Clock
     input  logic            clk,
-    
-    // Импульс, генерируемый при старте
+
+    // Start-up pulse
     output logic            pulse
 );
-    //------------------------------------------------------------------------------------
-    //      Описание констант
+    // Constants declaration
     localparam int unsigned CWIDTH = LEN < 1 ? 1 : $clog2(LEN + 1);
-    
-    //------------------------------------------------------------------------------------
-    //      Объявление сигналов
+
+
+    // Signals declaration
     logic [CWIDTH - 1 : 0]  delay_cnt;
     logic                   pulse_reg;
-    
-    //------------------------------------------------------------------------------------
-    //      Счетчик задержки
+
+
+    // Delay counter
     initial delay_cnt = LEN[CWIDTH - 1 : 0];
     always @(posedge clk)
         delay_cnt <= delay_cnt - (delay_cnt != 0);
-    
-    //------------------------------------------------------------------------------------
-    //      Регистр генерируемого импульса
+
+
+    // Pulse register
     initial pulse_reg = POL;
     always @(posedge clk)
         pulse_reg <= (LEN == 0) ? ~POL : (delay_cnt != 0) ^ (~POL);
     assign pulse = pulse_reg;
-    
+
+
 endmodule: initialpulse
